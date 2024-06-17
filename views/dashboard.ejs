@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Dashboard</h1>
+        <div class="header-right">
+            <a href="/auth/logout">Logout</a>
+        </div>
+    </header>
+    <div class="dashboard">
+        <h1>Welcome, <%= user.username %>!</h1>
+        <p>You can only add the bot to servers you have the Manage Server permission in.</p>
+        <ul class="guild-list">
+            <% user.guilds.forEach(guild => { %>
+                <li class="guild-item">
+                    <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" alt="<%= guild.name %>">
+                    <span class="guild-name"><%= guild.name %></span>
+                    <a href="/manage/<%= guild.id %>" class="manage-button">Manage</a>
+                </li>
+            <% }) %>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Guild</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Manage Guild</h1>
+        <div class="header-right">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/auth/logout">Logout</a>
+        </div>
+    </header>
+    <div class="manage">
+        <h1>Guild: <%= guild.guildId %></h1>
+        <p>Loop: <%= guild.loop %></p>
+        <p>Pause: <%= guild.pause %></p>
+        <p>Member: <%= guild.member %></p>
+        <p>Position: <%= guild.position %></p>
+        <h2>Current Track:</h2>
+        <p>Title: <%= guild.current.title %></p>
+        <p>Author: <%= guild.current.author %></p>
+        <p>Requested by: <%= guild.current.requester.username %> (<%= guild.current.requester.globalName %>)</p>
+        <img src="<%= guild.current.thumbnail %>" alt="Thumbnail">
+        <p><a href="<%= guild.current.uri %>" target="_blank">Watch on YouTube</a></p>
+    </div>
+</body>
+</html>
