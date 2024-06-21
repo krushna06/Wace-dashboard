@@ -1,0 +1,38 @@
+/* dashboard.css */
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.guild-list {
+    list-style: none;
+    padding: 0;
+}
+
+.guild-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.guild-avatar img {
+    width: 50px; /* Adjust avatar size as needed */
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px; /* Optional: Rounded corners for the image */
+}
+
+.guild-details {
+    margin-left: 15px;
+    flex: 1;
+}
+
+.guild-name {
+    margin-bottom: 5px;
+}
+
+.btn {
+    margin-left: 10px; /* Adjust margin as needed */
+}

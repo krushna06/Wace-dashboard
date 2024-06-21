@@ -1,8 +1,0 @@
-{
-    "clientID": "1038037031982481548",
-    "clientSecret": "jkQP_WJKadyc3HBvJBuJ54sH5bFZ8nmp",
-    "callbackURL": "https://3000-krushna06-wacedashboard-oto026bh0pg.ws-us114.gitpod.io/auth/callback",
-    "scopes": ["identify", "guilds"],
-    "sessionSecret": "wgweg3g43gwegwerghwt094htw0hg"
-  }
-  

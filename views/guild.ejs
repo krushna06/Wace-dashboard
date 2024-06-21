@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/player.css">
+    <title>Player Guild: <%= guild.name %></title>
+</head>
+<body>
+    <div class="container">
+        <h1>Player Guild: <%= guild.name %></h1>
+        <div id="player-info" class="player-info"></div>
+        <a href="/dashboard" class="btn">Back to Dashboard</a>
+    </div>
+    <script>
+        async function getPlayerInfo() {
+            const response = await fetch(`/api/players/<%= guild.id %>`);
+            const player = await response.json();
+            const playerInfo = document.getElementById('player-info');
+            
+            if (player.current) {
+                const currentTrack = player.current;
+                const requester = currentTrack.requester;
+                playerInfo.innerHTML = `
+                    <div class="track-info">
+                        <div class="track-thumbnail">
+                            <img src="${currentTrack.thumbnail}" alt="Thumbnail">
+                        </div>
+                        <div class="track-details">
+                            <p><strong>Title:</strong> ${currentTrack.title}</p>
+                            <p><strong>Author:</strong> ${currentTrack.author}</p>
+                            <p><strong>Length:</strong> ${new Date(currentTrack.length).toISOString().substr(11, 8)}</p>
+                            <p><strong>Requester:</strong> ${requester.username} (${requester.globalName})</p>
+                            <p><strong>URL:</strong> <a href="${currentTrack.uri}" target="_blank">${currentTrack.uri}</a></p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                playerInfo.innerHTML = `<p>No track is currently playing.</p>`;
+            }
+
+            playerInfo.innerHTML += `
+                <h2>Player Info</h2>
+                <p><strong>Loop Mode:</strong> ${player.loop}</p>
+                <p><strong>Paused:</strong> ${player.pause}</p>
+                <p><strong>Position:</strong> ${player.position}</p>
+            `;
+
+            if (player.queue && player.queue.length > 0) {
+                const queue = player.queue;
+                playerInfo.innerHTML += `<h2>Queue</h2>`;
+                queue.forEach((track, index) => {
+                    playerInfo.innerHTML += `
+                        <div class="track-info">
+                            <div class="track-thumbnail">
+                                <img src="${track.thumbnail}" alt="Thumbnail">
+                            </div>
+                            <div class="track-details">
+                                <h3>Track ${index + 1}</h3>
+                                <p><strong>Title:</strong> ${track.title}</p>
+                                <p>
+                                    <span><strong>Author:</strong> ${track.author}</span>
+                                    <span><strong>Length:</strong> ${new Date(track.length).toISOString().substr(11, 8)}</span>
+                                </p>
+                                <p><strong>URL:</strong> <a href="${track.uri}" target="_blank">${track.uri}</a></p>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        getPlayerInfo();
+    </script>
+</body>
+</html>

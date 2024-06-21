@@ -1,52 +1,82 @@
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
-const axios = require('axios');
+const DiscordStrategy = require('passport-discord').Strategy;
 const path = require('path');
-const authRoute = require('./routes/auth');
-const manageRoute = require('./routes/manage');
-const config = require('./config/config.json');
+require('dotenv').config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
-app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: config.sessionSecret,
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/auth', authRoute);
-app.use('/manage', manageRoute);
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
 
+passport.deserializeUser((obj, done) => {
+    done(null, obj);
+});
+
+passport.use(new DiscordStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: process.env.CALLBACK_URL,
+    scope: ['identify', 'guilds']
+},
+(accessToken, refreshToken, profile, done) => {
+    process.nextTick(() => {
+        return done(null, profile);
+    });
+}));
+
+// Routes
+app.use('/auth', require('./routes/auth'));
+app.use('/api', require('./routes/api'));
+
+// Homepage route
 app.get('/', (req, res) => {
-    res.render('index', { user: req.user });
+    res.render('index');
 });
 
-app.get('/dashboard', ensureAuthenticated, async (req, res) => {
-    try {
-        const response = await axios.get('https://discord.com/api/v8/users/@me/guilds', {
-            headers: {
-                Authorization: `Bearer ${req.user.accessToken}`
-            }
-        });
-        res.render('dashboard', { user: { ...req.user, guilds: response.data } });
-    } catch (err) {
-        console.error('Error fetching guilds: ', err);
-        res.redirect('/');
+// Login route
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+// Dashboard route
+app.get('/dashboard', ensureAuthenticated, (req, res) => {
+    res.render('dashboard', { user: req.user });
+});
+
+// Guild management route
+app.get('/guild/:id', ensureAuthenticated, (req, res) => {
+    const guildId = req.params.id;
+    const guild = req.user.guilds.find(g => g.id === guildId);
+    if (!guild) {
+        return res.redirect('/dashboard');
     }
+    res.render('guild', { guild: guild });
 });
 
+// Middleware to ensure the user is authenticated
 function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) return next();
-    res.redirect('/');
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.redirect('/login');
 }
 
-app.listen(3000, () => {
-    console.log('Server started on http://localhost:3000');
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });

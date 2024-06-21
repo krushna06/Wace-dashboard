@@ -1,0 +1,84 @@
+body {
+    background-color: #23272A;
+    color: white;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: 100vh; /* Full viewport height */
+    margin: 0; /* Remove default margin */
+}
+
+.container {
+    max-width: 800px;
+    padding: 50px;
+    background-color: #2C2F33;
+    border-radius: 10px;
+    text-align: center; /* Center align content inside container */
+}
+
+h1 {
+    text-align: center;
+    margin-top: 0; /* Remove top margin for h1 */
+}
+
+.track-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.track-thumbnail {
+    margin-right: 20px;
+}
+
+.track-thumbnail img {
+    max-width: 100px;
+    border-radius: 5px;
+}
+
+.track-details {
+    flex: 1;
+}
+
+.track-details p {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+}
+
+.track-details a {
+    color: #7289DA;
+}
+
+.track-details span {
+    margin-right: 10px;
+}
+
+.track-details img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #7289DA;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.player-info h2 {
+    margin-top: 20px;
+}
+
+.player-info p {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+}

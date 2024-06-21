@@ -1,29 +1,11 @@
 const express = require('express');
 const passport = require('passport');
-const DiscordStrategy = require('passport-discord').Strategy;
-const config = require('../config/config.json');
-
 const router = express.Router();
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+router.get('/discord', passport.authenticate('discord'));
 
-passport.use(new DiscordStrategy({
-    clientID: config.clientID,
-    clientSecret: config.clientSecret,
-    callbackURL: config.callbackURL,
-    scope: config.scopes
-}, (accessToken, refreshToken, profile, done) => {
-    process.nextTick(() => done(null, profile));
-}));
-
-router.use(passport.initialize());
-router.use(passport.session());
-
-router.get('/login', passport.authenticate('discord'));
-
-router.get('/callback', passport.authenticate('discord', {
-    failureRedirect: '/'
+router.get('/discord/callback', passport.authenticate('discord', {
+    failureRedirect: '/login'
 }), (req, res) => {
     res.redirect('/dashboard');
 });

@@ -2,28 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css"> <!-- Include the new CSS file -->
     <title>Dashboard</title>
-    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <header>
-        <h1>Dashboard</h1>
-        <div class="header-right">
-            <a href="/auth/logout">Logout</a>
-        </div>
-    </header>
-    <div class="dashboard">
-        <h1>Welcome, <%= user.username %>!</h1>
-        <p>You can only add the bot to servers you have the Manage Server permission in.</p>
+    <div class="container">
+        <h1>Welcome, <%= user.username %></h1>
+        <h2>Your Guilds</h2>
         <ul class="guild-list">
             <% user.guilds.forEach(guild => { %>
-                <li class="guild-item">
-                    <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" alt="<%= guild.name %>">
-                    <span class="guild-name"><%= guild.name %></span>
-                    <a href="/manage/<%= guild.id %>" class="manage-button">Manage</a>
+                <li>
+                    <div class="guild-avatar">
+                        <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png" alt="<%= guild.name %> Avatar">
+                    </div>
+                    <div class="guild-details">
+                        <div class="guild-name"><%= guild.name %></div>
+                        <a href="/api/invite/<%= guild.id %>" class="btn">Invite</a>
+                        <a href="/guild/<%= guild.id %>" class="btn">Manage</a>
+                    </div>
                 </li>
             <% }) %>
         </ul>
+        <a href="/auth/logout" class="btn">Logout</a>
     </div>
 </body>
 </html>
