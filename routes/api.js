@@ -26,6 +26,5 @@ router.get('/players/:guildId', isAuthenticated, async (req, res) => {
     }
 });
 
-// Define other endpoints in a similar manner
 
 module.exports = router;

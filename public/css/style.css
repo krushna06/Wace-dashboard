@@ -14,28 +14,28 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    color: #fff; /* Set text color to white */
+    color: #fff; 
 }
 
 h2 {
     margin-top: 20px;
-    color: #fff; /* Set text color to white */
+    color: #fff; 
 }
 
 h3 {
     margin-top: 15px;
-    color: #fff; /* Set text color to white */
+    color: #fff; 
 }
 
 p {
     margin: 5px 0;
-    color: #fff; /* Set text color to white */
+    color: #fff; 
 }
 
 ul {
     list-style: none;
     padding: 0;
-    color: #fff; /* Set text color to white */
+    color: #fff; 
 }
 
 li {
@@ -47,7 +47,7 @@ a.btn {
     margin: 5px;
     padding: 10px 20px;
     background-color: #5f73bc;
-    color: #fff; /* Set text color to white */
+    color: #fff; 
     text-decoration: none;
     border-radius: 5px;
     transition: background-color 0.3s;
