@@ -34,5 +34,6 @@
 }
 
 .btn {
-    margin-left: 10px; /* Adjust margin as needed */
+    margin-left: 10px;
+    background-color: #5f73bc;
 }
