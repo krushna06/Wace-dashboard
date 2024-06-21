@@ -59,6 +59,20 @@ app.get('/dashboard', ensureAuthenticated, (req, res) => {
     res.render('dashboard', { user: req.user });
 });
 
+app.get('/logout', (req, res) => {
+    req.logout(err => {
+        if (err) { return next(err); }
+        req.session.destroy(err => {
+            if (err) {
+                return res.redirect('/dashboard');
+            }
+            res.clearCookie('connect.sid');
+            res.redirect('/');
+        });
+    });
+});
+
+
 // Guild management route
 app.get('/guild/:id', ensureAuthenticated, (req, res) => {
     const guildId = req.params.id;
