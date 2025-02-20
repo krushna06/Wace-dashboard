@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Search, Home, Volume2, Maximize2, SkipBack, SkipForward, Play, Pause, Repeat, Shuffle } from 'lucide-react';
 import { musicApi, type PlayerState, type Track } from './services/api';
 
-// Updated guild ID
 const GUILD_ID = '877062059966206002';
 
 function App() {
@@ -27,7 +26,6 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Update current time every second if playing
   useEffect(() => {
     if (playerState?.current && !playerState.pause) {
       const timer = setInterval(() => {
@@ -43,39 +41,44 @@ function App() {
   const handlePlayPause = async () => {
     if (!playerState) return;
     try {
+      console.log("Toggling play/pause...");
       await musicApi.togglePlay(GUILD_ID, !playerState.pause);
       await fetchPlayerState();
     } catch (error) {
-      console.error('Failed to toggle play state:', error instanceof Error ? error.message : 'Unknown error');
+      console.error("Failed to toggle play state:", error);
     }
   };
-
+  
   const handleSkip = async () => {
     try {
+      console.log("Skipping track...");
       await musicApi.skipTrack(GUILD_ID);
       await fetchPlayerState();
     } catch (error) {
-      console.error('Failed to skip track:', error instanceof Error ? error.message : 'Unknown error');
+      console.error("Failed to skip track:", error);
     }
   };
-
+  
   const handlePrevious = async () => {
     try {
+      console.log("Going to previous track...");
       await musicApi.previousTrack(GUILD_ID);
       await fetchPlayerState();
     } catch (error) {
-      console.error('Failed to go to previous track:', error instanceof Error ? error.message : 'Unknown error');
+      console.error("Failed to go to previous track:", error);
     }
   };
-
+  
   const handleVolumeChange = async (newVolume: number) => {
     try {
+      console.log(`Changing volume to: ${newVolume}`);
       setVolume(newVolume);
       await musicApi.setVolume(GUILD_ID, newVolume);
     } catch (error) {
-      console.error('Failed to change volume:', error instanceof Error ? error.message : 'Unknown error');
+      console.error("Failed to change volume:", error);
     }
   };
+  
 
   const handleSeek = async (e: React.MouseEvent<HTMLDivElement>) => {
     if (!playerState?.current) return;
