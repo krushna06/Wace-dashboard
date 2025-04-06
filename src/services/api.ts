@@ -30,6 +30,7 @@ export interface PlayerState {
   position: number;
   current: Track | null;
   queue: Track[];
+  volume: number;
 }
 
 export const musicApi = {

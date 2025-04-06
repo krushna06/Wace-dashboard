@@ -4,11 +4,20 @@ import { musicApi, type PlayerState, type Track } from './services/api';
 
 const GUILD_ID = '877062059966206002';
 
+function VolumeNotification({ volume }: { volume: number }) {
+  return (
+    <div className="fixed top-4 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+      Volume: {volume}%
+    </div>
+  );
+}
+
 function App() {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [volume, setVolume] = useState(100);
   const [currentTime, setCurrentTime] = useState(0);
+  const [showVolumeNotification, setShowVolumeNotification] = useState(false);
 
   const filteredMainQueue = playerState?.queue.filter(track => {
     if (!searchQuery) return true;
@@ -22,6 +31,11 @@ function App() {
       const state = await musicApi.getPlayer(GUILD_ID);
       setPlayerState(state);
       setCurrentTime(state.position);
+      
+      // Set volume from player state if available
+      if (state.volume !== undefined) {
+        setVolume(state.volume);
+      }
     } catch (error) {
       console.error('Failed to fetch player state:', error instanceof Error ? error.message : 'Unknown error');
     }
@@ -78,9 +92,25 @@ function App() {
   
   const handleVolumeChange = async (newVolume: number) => {
     try {
-      console.log(`Changing volume to: ${newVolume}`);
+      // Show notification immediately
+      setShowVolumeNotification(true);
       setVolume(newVolume);
-      await musicApi.setVolume(GUILD_ID, newVolume);
+      
+      // Debounce the API call to avoid too many requests
+      const timeoutId = setTimeout(async () => {
+        try {
+          await musicApi.setVolume(GUILD_ID, newVolume);
+        } catch (error) {
+          console.error("Failed to change volume:", error);
+        }
+      }, 100);
+      
+      // Hide notification after 3 seconds
+      setTimeout(() => {
+        setShowVolumeNotification(false);
+      }, 3000);
+      
+      return () => clearTimeout(timeoutId);
     } catch (error) {
       console.error("Failed to change volume:", error);
     }
@@ -113,6 +143,7 @@ function App() {
 
   return (
     <div className="h-screen bg-black text-white flex flex-col">
+      {showVolumeNotification && <VolumeNotification volume={volume} />}
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
@@ -287,7 +318,7 @@ function App() {
                   max="100"
                   value={volume}
                   onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
                 <div 
                   className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
