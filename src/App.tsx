@@ -206,21 +206,21 @@ function App() {
       <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
         <div className="flex items-center justify-between max-w-screen-xl mx-auto">
           {/* Currently Playing */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-64">
             {playerState?.current ? (
               <>
                 <img
                   src={playerState.current.thumbnail}
                   alt={playerState.current.title}
-                  className="w-14 h-14 object-cover rounded"
+                  className="w-14 h-14 object-cover rounded flex-shrink-0"
                 />
-                <div>
-                  <h3 className="font-semibold truncate">{playerState.current.title}</h3>
-                  <p className="text-zinc-400 text-sm truncate">{playerState.current.author}</p>
+                <div className="min-w-0">
+                  <h3 className="font-semibold truncate max-w-[120px]">{playerState.current.title}</h3>
+                  <p className="text-zinc-400 text-sm truncate max-w-[120px]">{playerState.current.author}</p>
                 </div>
               </>
             ) : (
-              <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center">
+              <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
                 <span className="text-zinc-500 text-xs">No track</span>
               </div>
             )}
