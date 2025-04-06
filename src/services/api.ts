@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://10002-krushna06-wace-k7yhh2obqw9.ws-us117.gitpod.io',
+  baseURL: 'https://3000-krushna06-wace-o0t5f1hu4k2.ws-us118.gitpod.io',
   headers: {
     'Authorization': 'dornox06',
   },
