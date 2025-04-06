@@ -42,7 +42,7 @@ function App() {
     if (!playerState) return;
     try {
       console.log("Toggling play/pause...");
-      await musicApi.togglePlay(GUILD_ID, !playerState.pause);
+      await musicApi.togglePlay(GUILD_ID);
       await fetchPlayerState();
     } catch (error) {
       console.error("Failed to toggle play state:", error);
@@ -288,7 +288,6 @@ function App() {
                 />
               </div>
             </div>
-            <Maximize2 className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
           </div>
         </div>
       </div>
