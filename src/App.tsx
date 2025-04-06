@@ -10,6 +10,13 @@ function App() {
   const [volume, setVolume] = useState(100);
   const [currentTime, setCurrentTime] = useState(0);
 
+  const filteredMainQueue = playerState?.queue.filter(track => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return track.title.toLowerCase().includes(query) || 
+           track.author.toLowerCase().includes(query);
+  });
+
   const fetchPlayerState = async () => {
     try {
       const state = await musicApi.getPlayer(GUILD_ID);
@@ -151,7 +158,7 @@ function App() {
           <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">Queue</h2>
             <div className="grid grid-cols-5 gap-4">
-              {playerState?.queue.map((track, index) => (
+              {filteredMainQueue?.map((track, index) => (
                 <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
                   <div className="relative mb-4">
                     <img 
