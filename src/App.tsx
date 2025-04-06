@@ -121,7 +121,7 @@ function App() {
           
           <div className="mt-6">
             <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Queue</h2>
-            <ul className="space-y-2">
+            <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
               {playerState?.queue.map((track, index) => (
                 <li key={index} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate">
                   {track.title}
@@ -132,7 +132,7 @@ function App() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-gradient-to-b from-zinc-900 to-black overflow-auto">
+        <div className="flex-1 bg-gradient-to-b from-zinc-900 to-black overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
           {/* Search Bar */}
           <div className="p-6">
             <div className="relative">
