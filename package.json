@@ -1,6 +1,6 @@
 {
   "name": "vite-react-typescript-starter",
-  "proxy": "https://3000-krushna06-wace-o0t5f1hu4k2.ws-us118.gitpod.io",
+  "proxy": "http://localhost:10003",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://3000-krushna06-wace-o0t5f1hu4k2.ws-us118.gitpod.io',
+  baseURL: 'http://localhost:10003',
   headers: {
     'Authorization': 'dornox06',
   },
@@ -66,8 +66,9 @@ export const musicApi = {
 
   async togglePlay(guildId: string): Promise<void> {
     try {
+      const currentState = await this.getPlayer(guildId);
       const { data } = await api.patch(`/v1/players/${guildId}`, {
-        skipMode: "normal",
+        paused: !currentState.pause,
       });
       console.log("Play/Pause toggled:", data);
     } catch (error) {
