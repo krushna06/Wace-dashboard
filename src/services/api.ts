@@ -163,13 +163,13 @@ export const musicApi = {
     }
   },
 
-  async search(query: string, requesterId: string): Promise<Track[]> {
+  async search(query: string, requesterId: string, source: 'youtube' | 'spotify' = 'youtube'): Promise<Track[]> {
     try {
       const { data } = await api.get(`/v1/search`, {
         params: {
           identifier: query,
           requester: requesterId,
-          source: 'youtube'
+          source: source
         }
       });
       console.log("Search results:", data);

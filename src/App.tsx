@@ -18,6 +18,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Track[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchSource, setSearchSource] = useState<'youtube' | 'spotify'>('youtube');
   const [volume, setVolume] = useState(100);
   const [currentTime, setCurrentTime] = useState(0);
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
@@ -152,7 +153,7 @@ function App() {
 
     setIsSearching(true);
     try {
-      const results = await musicApi.search(query, REQUESTER_ID);
+      const results = await musicApi.search(query, REQUESTER_ID, searchSource);
       setSearchResults(results);
     } catch (error) {
       console.error('Failed to search:', error);
@@ -203,15 +204,27 @@ function App() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Search Bar */}
           <div className="p-6">
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="What do you want to listen to?"
-                className="w-full pl-10 pr-4 py-2 bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors placeholder:text-zinc-400"
-              />
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="What do you want to listen to?"
+                  className="w-full pl-10 pr-4 py-2 bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors placeholder:text-zinc-400"
+                />
+              </div>
+              <div className="flex items-center">
+                <select
+                  value={searchSource}
+                  onChange={(e) => setSearchSource(e.target.value as 'youtube' | 'spotify')}
+                  className="bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors px-4 py-2 appearance-none cursor-pointer"
+                >
+                  <option value="youtube">YouTube</option>
+                  <option value="spotify">Spotify</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -219,7 +232,7 @@ function App() {
           <div className="flex-1 overflow-y-auto p-6">
             {searchQuery ? (
               <>
-                <h2 className="text-2xl font-bold mb-4">Search Results</h2>
+                <h2 className="text-2xl font-bold mb-4">Search Results ({searchSource})</h2>
                 {isSearching ? (
                   <div className="text-center text-zinc-400">Searching...</div>
                 ) : searchResults.length > 0 ? (
