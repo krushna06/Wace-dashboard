@@ -33,6 +33,16 @@ export interface PlayerState {
   volume: number;
 }
 
+export interface Playlist {
+  id: string;
+  name: string;
+  description: string;
+  private: boolean;
+  created: number;
+  trackCount: number;
+  tracks: Track[];
+}
+
 export const musicApi = {
   async getPlayer(guildId: string): Promise<PlayerState> {
     try {
@@ -176,6 +186,28 @@ export const musicApi = {
       return data.tracks || [];
     } catch (error) {
       console.error("Error searching tracks:", error);
+      throw error;
+    }
+  },
+
+  async getPlaylists(userId: string): Promise<Playlist[]> {
+    try {
+      const { data } = await api.get(`/v1/playlists/${userId}`);
+      console.log("Playlists fetched:", data);
+      return data.data || [];
+    } catch (error) {
+      console.error("Error fetching playlists:", error);
+      throw error;
+    }
+  },
+
+  async getPlaylist(id: string): Promise<Playlist> {
+    try {
+      const { data } = await api.get(`/v1/playlists/${id}`);
+      console.log("Playlist response:", data);
+      return data.data[0];
+    } catch (error) {
+      console.error("Error fetching playlist:", error);
       throw error;
     }
   },

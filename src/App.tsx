@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Home, Volume2, Maximize2, SkipBack, SkipForward, Play, Pause, Repeat, Shuffle } from 'lucide-react';
-import { musicApi, type PlayerState, type Track } from './services/api';
+import { Search, Home, Volume2, Maximize2, SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, ListMusic } from 'lucide-react';
+import { musicApi, type PlayerState, type Track, type Playlist } from './services/api';
+import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
 
 const GUILD_ID = '877062059966206002';
 const REQUESTER_ID = '853620650592567304';
@@ -9,6 +10,285 @@ function VolumeNotification({ volume }: { volume: number }) {
   return (
     <div className="fixed top-4 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
       Volume: {volume}%
+    </div>
+  );
+}
+
+function Sidebar({ playlists }: { playlists: Playlist[] }) {
+  return (
+    <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
+      <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+        <Home className="w-6 h-6" />
+        <Link to="/" className="hover:text-white transition-colors">Home</Link>
+      </div>
+      <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+        <Search className="w-6 h-6" />
+        <Link to="/search" className="hover:text-white transition-colors">Search</Link>
+      </div>
+      
+      <div className="mt-6">
+        <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Your Playlists</h2>
+        <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
+          {playlists.map((playlist) => (
+            <li key={playlist.id} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate">
+              <Link to={`/playlist/${playlist.id}`} className="flex items-center gap-2">
+                <ListMusic className="w-4 h-4" />
+                <span>{playlist.name}</span>
+                <span className="text-xs text-zinc-600">({playlist.trackCount})</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function PlayerControls({ playerState, handlePlayPause, handleSkip, handlePrevious, handleSeek, currentTime, volume, handleVolumeChange }: any) {
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
+      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
+        {/* Currently Playing */}
+        <div className="flex items-center gap-4 w-64">
+          {playerState?.current ? (
+            <>
+              <img
+                src={playerState.current.thumbnail}
+                alt={playerState.current.title}
+                className="w-14 h-14 object-cover rounded flex-shrink-0"
+              />
+              <div className="min-w-0">
+                <h3 className="font-semibold truncate max-w-[120px]">{playerState.current.title}</h3>
+                <p className="text-zinc-400 text-sm truncate max-w-[120px]">{playerState.current.author}</p>
+              </div>
+            </>
+          ) : (
+            <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
+              <span className="text-zinc-500 text-xs">No track</span>
+            </div>
+          )}
+        </div>
+
+        {/* Playback Controls */}
+        <div className="flex flex-col items-center gap-2 flex-1 max-w-md">
+          <div className="flex items-center gap-4">
+            <Shuffle className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
+            <SkipBack 
+              onClick={handlePrevious}
+              className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
+            />
+            <button
+              onClick={handlePlayPause}
+              className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-black hover:scale-105 transition-all"
+            >
+              {playerState?.pause ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+            </button>
+            <SkipForward 
+              onClick={handleSkip}
+              className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
+            />
+            <Repeat className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
+          </div>
+          <div className="w-full flex items-center gap-2">
+            <span className="text-xs text-zinc-400">
+              {formatTime(currentTime)}
+            </span>
+            <div 
+              className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer"
+              onClick={handleSeek}
+            >
+              <div
+                className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                style={{ 
+                  width: playerState?.current 
+                    ? `${(currentTime / playerState.current.length) * 100}%` 
+                    : '0%' 
+                }}
+              />
+            </div>
+            <span className="text-xs text-zinc-400">
+              {playerState?.current ? formatTime(playerState.current.length) : '0:00'}
+            </span>
+          </div>
+        </div>
+
+        {/* Volume Controls */}
+        <div className="flex items-center gap-4">
+          <Volume2 className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
+          <div className="w-24">
+            <div className="relative h-1 bg-zinc-800 rounded-full">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={volume}
+                onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div 
+                className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                style={{ width: `${volume}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HomePage({ playerState, filteredMainQueue }: { playerState: PlayerState | null, filteredMainQueue: Track[] | undefined }) {
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      <h2 className="text-2xl font-bold mb-4">Queue</h2>
+      <div className="grid grid-cols-5 gap-4">
+        {filteredMainQueue?.map((track, index) => (
+          <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+            <div className="relative mb-4">
+              <img 
+                src={track.thumbnail} 
+                alt={track.title}
+                className="aspect-square object-cover rounded-md"
+              />
+              <button 
+                className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+              >
+                <Play className="w-5 h-5" />
+              </button>
+            </div>
+            <h3 className="font-semibold text-white truncate">{track.title}</h3>
+            <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SearchPage({ searchQuery, setSearchQuery, searchSource, setSearchSource, searchResults, isSearching }: any) {
+  return (
+    <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Search Bar */}
+      <div className="p-6">
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="What do you want to listen to?"
+              className="w-full pl-10 pr-4 py-2 bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors placeholder:text-zinc-400"
+            />
+          </div>
+          <div className="flex items-center">
+            <select
+              value={searchSource}
+              onChange={(e) => setSearchSource(e.target.value as 'youtube' | 'spotify')}
+              className="bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors px-4 py-2 appearance-none cursor-pointer"
+            >
+              <option value="youtube">YouTube</option>
+              <option value="spotify">Spotify</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Search Results */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {searchQuery ? (
+          <>
+            <h2 className="text-2xl font-bold mb-4">Search Results ({searchSource})</h2>
+            {isSearching ? (
+              <div className="text-center text-zinc-400">Searching...</div>
+            ) : searchResults.length > 0 ? (
+              <div className="grid grid-cols-5 gap-4">
+                {searchResults.map((track: Track, index: number) => (
+                  <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+                    <div className="relative mb-4">
+                      <img 
+                        src={track.thumbnail} 
+                        alt={track.title}
+                        className="aspect-square object-cover rounded-md"
+                      />
+                      <button 
+                        onClick={() => musicApi.addTrack(GUILD_ID, track.uri)}
+                        className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+                      >
+                        <Play className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <h3 className="font-semibold text-white truncate">{track.title}</h3>
+                    <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-zinc-400">No results found</div>
+            )}
+          </>
+        ) : (
+          <div className="text-center text-zinc-400">Enter a search query to find music</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
+  console.log("PlaylistPage rendered with playlist:", playlist);
+  
+  if (!playlist) {
+    return <div className="flex-1 overflow-y-auto p-6 text-center text-zinc-400">Loading playlist...</div>;
+  }
+
+  // Ensure tracks is an array
+  const tracks = Array.isArray(playlist.tracks) ? playlist.tracks : [];
+  console.log('Tracks to display:', tracks);
+
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex items-center gap-6 mb-8">
+        <div className="w-48 h-48 bg-zinc-800 rounded-lg flex items-center justify-center">
+          <ListMusic className="w-16 h-16 text-zinc-600" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{playlist.name}</h1>
+          <p className="text-zinc-400 mb-4">{playlist.description}</p>
+          <p className="text-zinc-500 text-sm">{playlist.trackCount} tracks</p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {tracks.length > 0 ? (
+          tracks.map((track, index) => (
+            <div key={index} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/50 transition-colors group">
+              <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
+                <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-white truncate">{track.title}</h3>
+                <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+              </div>
+              <button 
+                onClick={() => musicApi.addTrack(GUILD_ID, track.uri)}
+                className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+              >
+                <Play className="w-5 h-5" />
+              </button>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-zinc-400">No tracks in this playlist</div>
+        )}
+      </div>
     </div>
   );
 }
@@ -22,6 +302,9 @@ function App() {
   const [volume, setVolume] = useState(100);
   const [currentTime, setCurrentTime] = useState(0);
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [currentPlaylist, setCurrentPlaylist] = useState<Playlist | null>(null);
+  const { id: playlistId } = useParams();
 
   const filteredMainQueue = playerState?.queue.filter(track => {
     if (!searchQuery) return true;
@@ -45,8 +328,30 @@ function App() {
     }
   };
 
+  const fetchPlaylists = async () => {
+    try {
+      const playlistsData = await musicApi.getPlaylists(REQUESTER_ID);
+      setPlaylists(playlistsData);
+    } catch (error) {
+      console.error('Failed to fetch playlists:', error);
+    }
+  };
+
+  const fetchPlaylist = async (id: string) => {
+    try {
+      console.log("Fetching playlist with ID:", id);
+      const playlist = await musicApi.getPlaylist(id);
+      console.log("Fetched playlist:", playlist);
+      setCurrentPlaylist(playlist);
+    } catch (error) {
+      console.error('Failed to fetch playlist:', error);
+      setCurrentPlaylist(null);
+    }
+  };
+
   useEffect(() => {
     fetchPlayerState();
+    fetchPlaylists();
     const interval = setInterval(fetchPlayerState, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -62,6 +367,15 @@ function App() {
       return () => clearInterval(timer);
     }
   }, [playerState?.current, playerState?.pause]);
+
+  useEffect(() => {
+    console.log("useEffect triggered with playlistId:", playlistId);
+    if (playlistId) {
+      fetchPlaylist(playlistId);
+    } else {
+      setCurrentPlaylist(null);
+    }
+  }, [playlistId]);
 
   const handlePlayPause = async () => {
     if (!playerState) return;
@@ -120,7 +434,6 @@ function App() {
     }
   };
   
-
   const handleSeek = async (e: React.MouseEvent<HTMLDivElement>) => {
     if (!playerState?.current) return;
     
@@ -136,13 +449,6 @@ function App() {
     } catch (error) {
       console.error('Failed to seek:', error instanceof Error ? error.message : 'Unknown error');
     }
-  };
-
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
   const handleSearch = async (query: string) => {
@@ -173,241 +479,86 @@ function App() {
   }, [searchQuery]);
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
-      {showVolumeNotification && <VolumeNotification volume={volume} />}
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
-          <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
-            <Home className="w-6 h-6" />
-            <span>Home</span>
-          </div>
-          <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
-            <Search className="w-6 h-6" />
-            <span>Search</span>
-          </div>
-          
-          <div className="mt-6">
-            <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Queue</h2>
-            <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
-              {playerState?.queue.map((track, index) => (
-                <li key={index} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate">
-                  {track.title}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
+    <Router>
+      <div className="h-screen bg-black text-white flex flex-col">
+        {showVolumeNotification && <VolumeNotification volume={volume} />}
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Search Bar */}
-          <div className="p-6">
-            <div className="flex gap-4">
-              <div className="relative flex-1">
-                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="What do you want to listen to?"
-                  className="w-full pl-10 pr-4 py-2 bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors placeholder:text-zinc-400"
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Sidebar */}
+          <Sidebar playlists={playlists} />
+
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Routes>
+              <Route path="/" element={<HomePage playerState={playerState} filteredMainQueue={filteredMainQueue} />} />
+              <Route path="/search" element={
+                <SearchPage 
+                  searchQuery={searchQuery} 
+                  setSearchQuery={setSearchQuery} 
+                  searchSource={searchSource} 
+                  setSearchSource={setSearchSource} 
+                  searchResults={searchResults} 
+                  isSearching={isSearching} 
                 />
-              </div>
-              <div className="flex items-center">
-                <select
-                  value={searchSource}
-                  onChange={(e) => setSearchSource(e.target.value as 'youtube' | 'spotify')}
-                  className="bg-zinc-800 text-white rounded-full border border-zinc-700 focus:border-white transition-colors px-4 py-2 appearance-none cursor-pointer"
-                >
-                  <option value="youtube">YouTube</option>
-                  <option value="spotify">Spotify</option>
-                </select>
-              </div>
-            </div>
+              } />
+              <Route path="/playlist/:id" element={<PlaylistPage playlist={currentPlaylist} />} />
+            </Routes>
           </div>
 
-          {/* Search Results or Queue */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {searchQuery ? (
-              <>
-                <h2 className="text-2xl font-bold mb-4">Search Results ({searchSource})</h2>
-                {isSearching ? (
-                  <div className="text-center text-zinc-400">Searching...</div>
-                ) : searchResults.length > 0 ? (
-                  <div className="grid grid-cols-5 gap-4">
-                    {searchResults.map((track, index) => (
-                      <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
-                        <div className="relative mb-4">
-                          <img 
-                            src={track.thumbnail} 
-                            alt={track.title}
-                            className="aspect-square object-cover rounded-md"
-                          />
-                          <button 
-                            onClick={() => musicApi.addTrack(GUILD_ID, track.uri)}
-                            className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
-                          >
-                            <Play className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <h3 className="font-semibold text-white truncate">{track.title}</h3>
-                        <p className="text-zinc-400 text-sm truncate">{track.author}</p>
-                      </div>
-                    ))}
+          {/* Right Sidebar - Current Song Details */}
+          <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
+            <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Now Playing</h2>
+            {playerState?.current ? (
+              <div className="flex flex-col gap-4">
+                <div className="relative">
+                  <img 
+                    src={playerState.current.thumbnail} 
+                    alt={playerState.current.title}
+                    className="w-full aspect-square object-cover rounded-md"
+                  />
+                  <div className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black shadow-xl">
+                    <Play className="w-5 h-5" />
                   </div>
-                ) : (
-                  <div className="text-center text-zinc-400">No results found</div>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white truncate">{playerState.current.title}</h3>
+                  <p className="text-zinc-400 text-sm truncate">{playerState.current.author}</p>
+                </div>
+                {playerState.current.requester && (
+                  <div className="flex items-center gap-2">
+                    <img 
+                      src={playerState.current.requester.defaultAvatarURL} 
+                      alt={playerState.current.requester.username || playerState.current.requester.globalName || 'User'} 
+                      className="w-6 h-6 rounded-full"
+                    />
+                    <span className="text-zinc-400 text-sm truncate">
+                      Requested by {playerState.current.requester.globalName || playerState.current.requester.username}
+                    </span>
+                  </div>
                 )}
-              </>
-            ) : (
-              <>
-                <h2 className="text-2xl font-bold mb-4">Queue</h2>
-                <div className="grid grid-cols-5 gap-4">
-                  {filteredMainQueue?.map((track, index) => (
-                    <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
-                      <div className="relative mb-4">
-                        <img 
-                          src={track.thumbnail} 
-                          alt={track.title}
-                          className="aspect-square object-cover rounded-md"
-                        />
-                        <button 
-                          className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
-                        >
-                          <Play className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <h3 className="font-semibold text-white truncate">{track.title}</h3>
-                      <p className="text-zinc-400 text-sm truncate">{track.author}</p>
-                    </div>
-                  ))}
+                <div className="text-zinc-500 text-xs">
+                  Duration: {Math.floor(playerState.current.length / 1000 / 60)}:{(playerState.current.length / 1000 % 60).toString().padStart(2, '0')}
                 </div>
-              </>
+              </div>
+            ) : (
+              <div className="text-zinc-500 text-center">No track currently playing</div>
             )}
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="w-96 bg-zinc-950 p-6">
-          <div className="bg-zinc-900/50 rounded-lg p-6">
-            {playerState?.current ? (
-              <>
-                <img
-                  src={playerState.current.thumbnail}
-                  alt={playerState.current.title}
-                  className="aspect-square object-cover rounded-lg mb-4"
-                />
-                <h2 className="text-xl font-bold mb-2 truncate">{playerState.current.title}</h2>
-                <p className="text-zinc-400 mb-4 truncate">{playerState.current.author}</p>
-                <div className="space-y-2">
-                  <p className="text-sm text-zinc-400">Length: {formatTime(playerState.current.length)}</p>
-                  <p className="text-sm text-zinc-400">Position: {formatTime(currentTime)}</p>
-                  {playerState.current.requester && (
-                    <p className="text-sm text-zinc-400">Requested by: {playerState.current.requester.globalName}</p>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="aspect-square bg-zinc-800 rounded-lg mb-4 flex items-center justify-center">
-                <span className="text-zinc-500">Not Playing</span>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Player Controls */}
+        <PlayerControls 
+          playerState={playerState}
+          handlePlayPause={handlePlayPause}
+          handleSkip={handleSkip}
+          handlePrevious={handlePrevious}
+          handleSeek={handleSeek}
+          currentTime={currentTime}
+          volume={volume}
+          handleVolumeChange={handleVolumeChange}
+        />
       </div>
-
-      {/* Player Controls */}
-      <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
-        <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-          {/* Currently Playing */}
-          <div className="flex items-center gap-4 w-64">
-            {playerState?.current ? (
-              <>
-                <img
-                  src={playerState.current.thumbnail}
-                  alt={playerState.current.title}
-                  className="w-14 h-14 object-cover rounded flex-shrink-0"
-                />
-                <div className="min-w-0">
-                  <h3 className="font-semibold truncate max-w-[120px]">{playerState.current.title}</h3>
-                  <p className="text-zinc-400 text-sm truncate max-w-[120px]">{playerState.current.author}</p>
-                </div>
-              </>
-            ) : (
-              <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
-                <span className="text-zinc-500 text-xs">No track</span>
-              </div>
-            )}
-          </div>
-
-          {/* Playback Controls */}
-          <div className="flex flex-col items-center gap-2 flex-1 max-w-md">
-            <div className="flex items-center gap-4">
-              <Shuffle className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
-              <SkipBack 
-                onClick={handlePrevious}
-                className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
-              />
-              <button
-                onClick={handlePlayPause}
-                className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-black hover:scale-105 transition-all"
-              >
-                {playerState?.pause ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-              </button>
-              <SkipForward 
-                onClick={handleSkip}
-                className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
-              />
-              <Repeat className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
-            </div>
-            <div className="w-full flex items-center gap-2">
-              <span className="text-xs text-zinc-400">
-                {formatTime(currentTime)}
-              </span>
-              <div 
-                className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer"
-                onClick={handleSeek}
-              >
-                <div
-                  className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                  style={{ 
-                    width: playerState?.current 
-                      ? `${(currentTime / playerState.current.length) * 100}%` 
-                      : '0%' 
-                  }}
-                />
-              </div>
-              <span className="text-xs text-zinc-400">
-                {playerState?.current ? formatTime(playerState.current.length) : '0:00'}
-              </span>
-            </div>
-          </div>
-
-          {/* Volume Controls */}
-          <div className="flex items-center gap-4">
-            <Volume2 className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
-            <div className="w-24">
-              <div className="relative h-1 bg-zinc-800 rounded-full">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div 
-                  className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                  style={{ width: `${volume}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Router>
   );
 }
 
