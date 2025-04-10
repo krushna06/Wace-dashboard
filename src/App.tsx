@@ -3,6 +3,7 @@ import { Search, Home, Volume2, Maximize2, SkipBack, SkipForward, Play, Pause, R
 import { musicApi, type PlayerState, type Track } from './services/api';
 
 const GUILD_ID = '877062059966206002';
+const REQUESTER_ID = '853620650592567304';
 
 function VolumeNotification({ volume }: { volume: number }) {
   return (
@@ -15,6 +16,8 @@ function VolumeNotification({ volume }: { volume: number }) {
 function App() {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Track[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [volume, setVolume] = useState(100);
   const [currentTime, setCurrentTime] = useState(0);
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
@@ -141,6 +144,33 @@ function App() {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await musicApi.search(query, REQUESTER_ID);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Failed to search:', error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Debounce search to avoid too many requests
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      handleSearch(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   return (
     <div className="h-screen bg-black text-white flex flex-col">
       {showVolumeNotification && <VolumeNotification volume={volume} />}
@@ -170,7 +200,7 @@ function App() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 bg-gradient-to-b from-zinc-900 to-black overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Search Bar */}
           <div className="p-6">
             <div className="relative">
@@ -185,29 +215,64 @@ function App() {
             </div>
           </div>
 
-          {/* Song Feed */}
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Queue</h2>
-            <div className="grid grid-cols-5 gap-4">
-              {filteredMainQueue?.map((track, index) => (
-                <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
-                  <div className="relative mb-4">
-                    <img 
-                      src={track.thumbnail} 
-                      alt={track.title}
-                      className="aspect-square object-cover rounded-md"
-                    />
-                    <button 
-                      className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
-                    >
-                      <Play className="w-5 h-5" />
-                    </button>
+          {/* Search Results or Queue */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {searchQuery ? (
+              <>
+                <h2 className="text-2xl font-bold mb-4">Search Results</h2>
+                {isSearching ? (
+                  <div className="text-center text-zinc-400">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="grid grid-cols-5 gap-4">
+                    {searchResults.map((track, index) => (
+                      <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+                        <div className="relative mb-4">
+                          <img 
+                            src={track.thumbnail} 
+                            alt={track.title}
+                            className="aspect-square object-cover rounded-md"
+                          />
+                          <button 
+                            onClick={() => musicApi.addTrack(GUILD_ID, track.uri)}
+                            className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+                          >
+                            <Play className="w-5 h-5" />
+                          </button>
+                        </div>
+                        <h3 className="font-semibold text-white truncate">{track.title}</h3>
+                        <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+                      </div>
+                    ))}
                   </div>
-                  <h3 className="font-semibold text-white truncate">{track.title}</h3>
-                  <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+                ) : (
+                  <div className="text-center text-zinc-400">No results found</div>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold mb-4">Queue</h2>
+                <div className="grid grid-cols-5 gap-4">
+                  {filteredMainQueue?.map((track, index) => (
+                    <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+                      <div className="relative mb-4">
+                        <img 
+                          src={track.thumbnail} 
+                          alt={track.title}
+                          className="aspect-square object-cover rounded-md"
+                        />
+                        <button 
+                          className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+                        >
+                          <Play className="w-5 h-5" />
+                        </button>
+                      </div>
+                      <h3 className="font-semibold text-white truncate">{track.title}</h3>
+                      <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </div>
         </div>
 

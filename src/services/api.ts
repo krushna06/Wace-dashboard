@@ -161,5 +161,22 @@ export const musicApi = {
       console.error("Error updating loop mode:", error);
       throw error;
     }
-  },  
+  },
+
+  async search(query: string, requesterId: string): Promise<Track[]> {
+    try {
+      const { data } = await api.get(`/v1/search`, {
+        params: {
+          identifier: query,
+          requester: requesterId,
+          source: 'youtube'
+        }
+      });
+      console.log("Search results:", data);
+      return data.tracks || [];
+    } catch (error) {
+      console.error("Error searching tracks:", error);
+      throw error;
+    }
+  },
 };
