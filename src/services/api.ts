@@ -211,4 +211,10 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async setShuffle(guildId: string, shuffle: boolean): Promise<void> {
+    await this.patch(`/players/${guildId}`, {
+      shuffle
+    });
+  },
 };

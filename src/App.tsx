@@ -44,7 +44,7 @@ function Sidebar({ playlists }: { playlists: Playlist[] }) {
   );
 }
 
-function PlayerControls({ playerState, handlePlayPause, handleSkip, handlePrevious, handleSeek, currentTime, volume, handleVolumeChange }: any) {
+function PlayerControls({ playerState, handlePlayPause, handleSkip, handlePrevious, handleSeek, currentTime, volume, handleVolumeChange, isShuffled, handleShuffle }: any) {
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -79,7 +79,10 @@ function PlayerControls({ playerState, handlePlayPause, handleSkip, handlePrevio
         {/* Playback Controls */}
         <div className="flex flex-col items-center gap-2 flex-1 max-w-md">
           <div className="flex items-center gap-4">
-            <Shuffle className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
+            <Shuffle 
+              onClick={handleShuffle}
+              className={`w-5 h-5 ${isShuffled ? 'text-white' : 'text-zinc-400'} hover:text-white cursor-pointer transition-colors`}
+            />
             <SkipBack 
               onClick={handlePrevious}
               className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
@@ -148,26 +151,33 @@ function HomePage({ playerState, filteredMainQueue }: { playerState: PlayerState
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <h2 className="text-2xl font-bold mb-4">Queue</h2>
-      <div className="grid grid-cols-5 gap-4">
-        {filteredMainQueue?.map((track, index) => (
-          <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
-            <div className="relative mb-4">
-              <img 
-                src={track.thumbnail} 
-                alt={track.title}
-                className="aspect-square object-cover rounded-md"
-              />
-              <button 
-                className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
-              >
-                <Play className="w-5 h-5" />
-              </button>
+      {filteredMainQueue && filteredMainQueue.length > 0 ? (
+        <div className="grid grid-cols-5 gap-4">
+          {filteredMainQueue.map((track, index) => (
+            <div key={index} className="bg-zinc-900/50 p-4 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer group">
+              <div className="relative mb-4">
+                <img 
+                  src={track.thumbnail} 
+                  alt={track.title}
+                  className="aspect-square object-cover rounded-md"
+                />
+                <button 
+                  className="absolute bottom-2 right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+                >
+                  <Play className="w-5 h-5" />
+                </button>
+              </div>
+              <h3 className="font-semibold text-white truncate">{track.title}</h3>
+              <p className="text-zinc-400 text-sm truncate">{track.author}</p>
             </div>
-            <h3 className="font-semibold text-white truncate">{track.title}</h3>
-            <p className="text-zinc-400 text-sm truncate">{track.author}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-zinc-400 py-12">
+          <p className="text-xl mb-2">Queue is empty</p>
+          <p className="text-sm">Search for songs or select a playlist to add music to the queue</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -243,15 +253,14 @@ function SearchPage({ searchQuery, setSearchQuery, searchSource, setSearchSource
 }
 
 function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
-  console.log("PlaylistPage rendered with playlist:", playlist);
-  
   if (!playlist) {
     return <div className="flex-1 overflow-y-auto p-6 text-center text-zinc-400">Loading playlist...</div>;
   }
 
-  // Ensure tracks is an array
-  const tracks = Array.isArray(playlist.tracks) ? playlist.tracks : [];
-  console.log('Tracks to display:', tracks);
+  // Ensure tracks is an array and memoize it
+  const tracks = React.useMemo(() => {
+    return Array.isArray(playlist.tracks) ? playlist.tracks : [];
+  }, [playlist.tracks]);
 
   return (
     <div className="flex-1 overflow-y-auto p-6">
@@ -305,6 +314,7 @@ function App() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [currentPlaylist, setCurrentPlaylist] = useState<Playlist | null>(null);
   const { id: playlistId } = useParams();
+  const [isShuffled, setIsShuffled] = useState(false);
 
   const filteredMainQueue = playerState?.queue.filter(track => {
     if (!searchQuery) return true;
@@ -324,7 +334,24 @@ function App() {
         setVolume(state.volume);
       }
     } catch (error) {
-      console.error('Failed to fetch player state:', error instanceof Error ? error.message : 'Unknown error');
+      // Only log the error once when it first occurs
+      if (!playerState) {
+        console.log('No active player or empty queue');
+      }
+      
+      // Set a minimal player state to avoid errors
+      if (!playerState) {
+        setPlayerState({
+          guildId: GUILD_ID,
+          loop: 'none',
+          pause: true,
+          member: '',
+          position: 0,
+          current: null,
+          queue: [],
+          volume: 100
+        });
+      }
     }
   };
 
@@ -338,10 +365,13 @@ function App() {
   };
 
   const fetchPlaylist = async (id: string) => {
+    // Don't fetch if we already have this playlist loaded
+    if (currentPlaylist?.id === id) {
+      return;
+    }
+
     try {
-      console.log("Fetching playlist with ID:", id);
       const playlist = await musicApi.getPlaylist(id);
-      console.log("Fetched playlist:", playlist);
       setCurrentPlaylist(playlist);
     } catch (error) {
       console.error('Failed to fetch playlist:', error);
@@ -349,12 +379,64 @@ function App() {
     }
   };
 
+  // Consolidate playlist fetching into a single useEffect
+  useEffect(() => {
+    const fetchData = async () => {
+      // Only fetch playlists if we don't have them yet
+      if (playlists.length === 0) {
+        await fetchPlaylists();
+      }
+      
+      // Only fetch specific playlist if we have a playlistId
+      if (playlistId) {
+        await fetchPlaylist(playlistId);
+      } else {
+        setCurrentPlaylist(null);
+      }
+    };
+
+    fetchData();
+  }, [playlistId]); // Only depend on playlistId changes
+
   useEffect(() => {
     fetchPlayerState();
-    fetchPlaylists();
-    const interval = setInterval(fetchPlayerState, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    
+    // Only start polling if we have an active player
+    let interval: number | null = null;
+    
+    const startPolling = () => {
+      if (playerState?.current || (playerState?.queue && playerState.queue.length > 0)) {
+        interval = window.setInterval(fetchPlayerState, 1000);
+      }
+    };
+
+    const stopPolling = () => {
+      if (interval) {
+        window.clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    // Start polling if we have an active player
+    if (playerState?.current || (playerState?.queue && playerState.queue.length > 0)) {
+      startPolling();
+    }
+
+    // Cleanup function
+    return () => {
+      stopPolling();
+    };
+  }, [playerState?.current, playerState?.queue]);
+
+  // Update player state when tracks are added/removed
+  const handleTrackAdded = async () => {
+    await fetchPlayerState();
+    // Start polling if we weren't already
+    if (!playerState?.current && (!playerState?.queue || playerState.queue.length === 0)) {
+      const interval = window.setInterval(fetchPlayerState, 1000);
+      return () => window.clearInterval(interval);
+    }
+  };
 
   useEffect(() => {
     if (playerState?.current && !playerState.pause) {
@@ -368,19 +450,9 @@ function App() {
     }
   }, [playerState?.current, playerState?.pause]);
 
-  useEffect(() => {
-    console.log("useEffect triggered with playlistId:", playlistId);
-    if (playlistId) {
-      fetchPlaylist(playlistId);
-    } else {
-      setCurrentPlaylist(null);
-    }
-  }, [playlistId]);
-
   const handlePlayPause = async () => {
     if (!playerState) return;
     try {
-      console.log("Toggling play/pause...");
       await musicApi.togglePlay(GUILD_ID);
       await fetchPlayerState();
     } catch (error) {
@@ -390,7 +462,6 @@ function App() {
   
   const handleSkip = async () => {
     try {
-      console.log("Skipping track...");
       await musicApi.skipTrack(GUILD_ID);
       await fetchPlayerState();
     } catch (error) {
@@ -400,7 +471,6 @@ function App() {
   
   const handlePrevious = async () => {
     try {
-      console.log("Going to previous track...");
       await musicApi.previousTrack(GUILD_ID);
       await fetchPlayerState();
     } catch (error) {
@@ -410,7 +480,6 @@ function App() {
   
   const handleVolumeChange = async (newVolume: number) => {
     try {
-      // Show notification immediately
       setShowVolumeNotification(true);
       setVolume(newVolume);
       
@@ -477,6 +546,17 @@ function App() {
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
+
+  const handleShuffle = async () => {
+    try {
+      const newShuffleState = !isShuffled;
+      await musicApi.setShuffle(GUILD_ID, newShuffleState);
+      setIsShuffled(newShuffleState);
+      await fetchPlayerState();
+    } catch (error) {
+      console.error("Failed to toggle shuffle:", error);
+    }
+  };
 
   return (
     <Router>
@@ -556,6 +636,8 @@ function App() {
           currentTime={currentTime}
           volume={volume}
           handleVolumeChange={handleVolumeChange}
+          isShuffled={isShuffled}
+          handleShuffle={handleShuffle}
         />
       </div>
     </Router>
