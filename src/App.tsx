@@ -257,13 +257,9 @@ function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
     return <div className="flex-1 overflow-y-auto p-6 text-center text-zinc-400">Loading playlist...</div>;
   }
 
-  // Ensure tracks is an array and memoize it
-  const tracks = React.useMemo(() => {
-    return Array.isArray(playlist.tracks) ? playlist.tracks : [];
-  }, [playlist.tracks]);
-
   return (
     <div className="flex-1 overflow-y-auto p-6">
+      {/* Playlist Header */}
       <div className="flex items-center gap-6 mb-8">
         <div className="w-48 h-48 bg-zinc-800 rounded-lg flex items-center justify-center">
           <ListMusic className="w-16 h-16 text-zinc-600" />
@@ -275,10 +271,11 @@ function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
         </div>
       </div>
 
+      {/* Tracks List */}
       <div className="space-y-2">
-        {tracks.length > 0 ? (
-          tracks.map((track, index) => (
-            <div key={index} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/50 transition-colors group">
+        {playlist.tracks && playlist.tracks.length > 0 ? (
+          playlist.tracks.map((track, index) => (
+            <div key={`${track.uri}-${index}`} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/50 transition-colors group">
               <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
                 <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
               </div>
@@ -288,7 +285,7 @@ function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
               </div>
               <button 
                 onClick={() => musicApi.addTrack(GUILD_ID, track.uri)}
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-black opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all shadow-xl"
+                className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black rounded-full p-2"
               >
                 <Play className="w-5 h-5" />
               </button>
@@ -300,6 +297,29 @@ function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
       </div>
     </div>
   );
+}
+
+function PlaylistPageWrapper() {
+  const { id } = useParams();
+  const [playlist, setPlaylist] = useState<Playlist | null>(null);
+
+  useEffect(() => {
+    const loadPlaylist = async () => {
+      if (id) {
+        try {
+          const playlistData = await musicApi.getPlaylist(id);
+          setPlaylist(playlistData);
+        } catch (error) {
+          console.error('Failed to load playlist:', error);
+          setPlaylist(null);
+        }
+      }
+    };
+    
+    loadPlaylist();
+  }, [id]);
+
+  return <PlaylistPage playlist={playlist} />;
 }
 
 function App() {
@@ -329,17 +349,14 @@ function App() {
       setPlayerState(state);
       setCurrentTime(state.position);
       
-      // Set volume from player state if available
       if (state.volume !== undefined) {
         setVolume(state.volume);
       }
     } catch (error) {
-      // Only log the error once when it first occurs
       if (!playerState) {
         console.log('No active player or empty queue');
       }
       
-      // Set a minimal player state to avoid errors
       if (!playerState) {
         setPlayerState({
           guildId: GUILD_ID,
@@ -365,7 +382,6 @@ function App() {
   };
 
   const fetchPlaylist = async (id: string) => {
-    // Don't fetch if we already have this playlist loaded
     if (currentPlaylist?.id === id) {
       return;
     }
@@ -379,15 +395,12 @@ function App() {
     }
   };
 
-  // Consolidate playlist fetching into a single useEffect
   useEffect(() => {
     const fetchData = async () => {
-      // Only fetch playlists if we don't have them yet
       if (playlists.length === 0) {
         await fetchPlaylists();
       }
       
-      // Only fetch specific playlist if we have a playlistId
       if (playlistId) {
         await fetchPlaylist(playlistId);
       } else {
@@ -396,12 +409,11 @@ function App() {
     };
 
     fetchData();
-  }, [playlistId]); // Only depend on playlistId changes
+  }, [playlistId]);
 
   useEffect(() => {
     fetchPlayerState();
     
-    // Only start polling if we have an active player
     let interval: number | null = null;
     
     const startPolling = () => {
@@ -417,21 +429,17 @@ function App() {
       }
     };
 
-    // Start polling if we have an active player
     if (playerState?.current || (playerState?.queue && playerState.queue.length > 0)) {
       startPolling();
     }
 
-    // Cleanup function
     return () => {
       stopPolling();
     };
   }, [playerState?.current, playerState?.queue]);
 
-  // Update player state when tracks are added/removed
   const handleTrackAdded = async () => {
     await fetchPlayerState();
-    // Start polling if we weren't already
     if (!playerState?.current && (!playerState?.queue || playerState.queue.length === 0)) {
       const interval = window.setInterval(fetchPlayerState, 1000);
       return () => window.clearInterval(interval);
@@ -483,7 +491,6 @@ function App() {
       setShowVolumeNotification(true);
       setVolume(newVolume);
       
-      // Debounce the API call to avoid too many requests
       const timeoutId = setTimeout(async () => {
         try {
           await musicApi.setVolume(GUILD_ID, newVolume);
@@ -492,7 +499,6 @@ function App() {
         }
       }, 100);
       
-      // Hide notification after 3 seconds
       setTimeout(() => {
         setShowVolumeNotification(false);
       }, 3000);
@@ -538,7 +544,6 @@ function App() {
     }
   };
 
-  // Debounce search to avoid too many requests
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       handleSearch(searchQuery);
@@ -581,7 +586,7 @@ function App() {
                   isSearching={isSearching} 
                 />
               } />
-              <Route path="/playlist/:id" element={<PlaylistPage playlist={currentPlaylist} />} />
+              <Route path="/playlist/:id" element={<PlaylistPageWrapper />} />
             </Routes>
           </div>
 

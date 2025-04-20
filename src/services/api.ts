@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const REQUESTER_ID = '853620650592567304';
+
 const api = axios.create({
-  baseURL: 'http://localhost:10003',
+  baseURL: 'http://212.192.29.86:10003',
   headers: {
     'Authorization': 'dornox06',
   },
@@ -203,9 +205,18 @@ export const musicApi = {
 
   async getPlaylist(id: string): Promise<Playlist> {
     try {
-      const { data } = await api.get(`/v1/playlists/${id}`);
-      console.log("Playlist response:", data);
-      return data.data[0];
+      const playlists = await this.getPlaylists(REQUESTER_ID);
+      
+      const playlist = playlists.find(p => p.id === id);
+      
+      if (playlist) {
+        return {
+          ...playlist,
+          tracks: Array.isArray(playlist.tracks) ? playlist.tracks : []
+        };
+      }
+      
+      throw new Error('Playlist not found');
     } catch (error) {
       console.error("Error fetching playlist:", error);
       throw error;
