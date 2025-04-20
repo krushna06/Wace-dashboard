@@ -258,7 +258,7 @@ function PlaylistPage({ playlist }: { playlist: Playlist | null }) {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 overflow-y-auto p-6 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
       {/* Playlist Header */}
       <div className="flex items-center gap-6 mb-8">
         <div className="w-48 h-48 bg-zinc-800 rounded-lg flex items-center justify-center">
