@@ -6,6 +6,7 @@ import { PlayerControls } from '@/components/PlayerControls';
 import { Search, Home, ListMusic, Play } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { UserProfile } from '@/components/UserProfile';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -139,6 +140,10 @@ export function AppLayout({ children, guildId, requesterId }: AppLayoutProps) {
       <div className="flex-1 flex overflow-hidden">
         <Sidebar playlists={playlists} guildId={guildId} />
         <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-zinc-900">
+            <h1 className="text-xl font-bold">Wace Dashboard</h1>
+            <UserProfile />
+          </div>
           <div className="flex-1 overflow-y-auto p-6">
             {children}
           </div>
