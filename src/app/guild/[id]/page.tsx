@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
-import { musicApi } from '@/services/api';
+import { musicApi, type Track } from '@/services/api';
+import { Play } from 'lucide-react';
 
 interface Guild {
   id: string;
@@ -41,7 +42,8 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [guild, setGuild] = useState<Guild | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [queue, setQueue] = useState<Track[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,9 +53,9 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   }, [status, router]);
 
   useEffect(() => {
-    const fetchGuild = async () => {
+    const fetchGuildData = async () => {
       if (!session?.accessToken) {
-        setLoading(false);
+        setIsLoading(false);
         setError('No session token available');
         return;
       }
@@ -86,7 +88,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
 
         if (!currentGuild) {
           setError(`Guild not found or you do not have access to it. Guild ID: ${params.id}`);
-          setLoading(false);
+          setIsLoading(false);
           return;
         }
 
@@ -95,14 +97,31 @@ export default function GuildPage({ params }: { params: { id: string } }) {
         console.error('Failed to fetch guild:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch guild information');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchGuild();
+    const fetchQueue = async () => {
+      try {
+        const queueData = await musicApi.getQueue(params.id);
+        // Remove the first track (current track) from the queue
+        setQueue(queueData.slice(1));
+      } catch (error) {
+        console.error('Failed to fetch queue:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGuildData();
+    fetchQueue();
+
+    // Set up polling for queue updates
+    const interval = setInterval(fetchQueue, 5000);
+    return () => clearInterval(interval);
   }, [session?.accessToken, params.id]);
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
@@ -151,7 +170,37 @@ export default function GuildPage({ params }: { params: { id: string } }) {
             <p className="text-zinc-400">Music Player</p>
           </div>
         </div>
-        {/* Add your music player components here */}
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Upcoming Songs</h2>
+            {isLoading ? (
+              <div className="flex items-center justify-center min-h-[200px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              </div>
+            ) : queue.length > 0 ? (
+              <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto scrollbar-custom pr-2">
+                {queue.map((track, index) => (
+                  <div key={`${track.uri}-${index}`} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/50 transition-colors group">
+                    <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
+                      <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-white truncate">{track.title}</h3>
+                      <p className="text-zinc-400 text-sm truncate">{track.author}</p>
+                    </div>
+                    <div className="text-zinc-400 text-sm">
+                      #{index + 1}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-zinc-400 py-8">
+                No upcoming songs in the queue
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </AppLayout>
   );
