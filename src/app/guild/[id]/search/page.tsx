@@ -89,7 +89,7 @@ export default function GuildSearchPage({ params }: { params: { id: string } }) 
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
                 </div>
               ) : searchResults.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto scrollbar-custom pr-2">
                   {searchResults.map((track, index) => (
                     <div key={`${track.uri}-${index}`} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/50 transition-colors group">
                       <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
