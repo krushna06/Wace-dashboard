@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { UserProfile } from '@/components/UserProfile';
 
 interface Guild {
   id: string;
@@ -59,38 +60,44 @@ export default function GuildsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">Your Servers</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {guilds.map((guild) => (
-          <div key={guild.id} className="bg-zinc-900 rounded-lg p-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {guild.icon ? (
-                <img
-                  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                  alt={guild.name}
-                  className="w-12 h-12 rounded-full"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-                  <span className="text-xl font-bold">{guild.name.charAt(0)}</span>
+    <div className="min-h-screen bg-black text-white">
+      <div className="flex items-center justify-between p-4 border-b border-zinc-900">
+        <h1 className="text-xl font-bold">Wace Dashboard</h1>
+        <UserProfile />
+      </div>
+      <div className="p-8">
+        <h1 className="text-3xl font-bold mb-8">Your Servers</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {guilds.map((guild) => (
+            <div key={guild.id} className="bg-zinc-900 rounded-lg p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {guild.icon ? (
+                  <img
+                    src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                    alt={guild.name}
+                    className="w-12 h-12 rounded-full"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
+                    <span className="text-xl font-bold">{guild.name.charAt(0)}</span>
+                  </div>
+                )}
+                <div>
+                  <h2 className="font-semibold">{guild.name}</h2>
+                  <p className="text-zinc-400 text-sm">
+                    {guild.owner ? 'Owner' : 'Member'}
+                  </p>
                 </div>
-              )}
-              <div>
-                <h2 className="font-semibold">{guild.name}</h2>
-                <p className="text-zinc-400 text-sm">
-                  {guild.owner ? 'Owner' : 'Member'}
-                </p>
               </div>
+              <Link
+                href={`/guild/${guild.id}`}
+                className="bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
+              >
+                View
+              </Link>
             </div>
-            <Link
-              href={`/guild/${guild.id}`}
-              className="bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
-            >
-              View
-            </Link>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
