@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-const REQUESTER_ID = '853620650592567304';
-
 const api = axios.create({
-  baseURL: 'http://212.192.29.86:10003',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL as string,
   headers: {
-    'Authorization': 'dornox06',
+    'Authorization': process.env.NEXT_PUBLIC_API_AUTH_TOKEN as string,
   },
 });
 
@@ -203,9 +201,9 @@ export const musicApi = {
     }
   },
 
-  async getPlaylist(id: string): Promise<Playlist> {
+  async getPlaylist(id: string, userId: string): Promise<Playlist> {
     try {
-      const playlists = await this.getPlaylists(REQUESTER_ID);
+      const playlists = await this.getPlaylists(userId);
       
       const playlist = playlists.find(p => p.id === id);
       
