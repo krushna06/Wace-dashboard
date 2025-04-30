@@ -5,6 +5,7 @@ import { musicApi, type PlayerState, type Playlist } from '@/services/api';
 import { PlayerControls } from '@/components/PlayerControls';
 import { Search, Home, ListMusic, Play } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,16 +13,16 @@ interface AppLayoutProps {
   requesterId: string;
 }
 
-function Sidebar({ playlists }: { playlists: Playlist[] }) {
+function Sidebar({ playlists, guildId }: { playlists: Playlist[]; guildId: string }) {
   return (
     <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Home className="w-6 h-6" />
-        <Link href="/" className="hover:text-white transition-colors">Home</Link>
+        <Link href={`/guild/${guildId}`} className="hover:text-white transition-colors">Home</Link>
       </div>
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Search className="w-6 h-6" />
-        <Link href="/search" className="hover:text-white transition-colors">Search</Link>
+        <Link href={`/guild/${guildId}/search`} className="hover:text-white transition-colors">Search</Link>
       </div>
       
       <div className="mt-6">
@@ -29,7 +30,7 @@ function Sidebar({ playlists }: { playlists: Playlist[] }) {
         <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
           {playlists.map((playlist) => (
             <li key={playlist.id} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate">
-              <Link href={`/playlist/${playlist.id}`} className="flex items-center gap-2">
+              <Link href={`/guild/${guildId}/playlist/${playlist.id}`} className="flex items-center gap-2">
                 <ListMusic className="w-4 h-4" />
                 <span>{playlist.name}</span>
                 <span className="text-xs text-zinc-600">({playlist.trackCount})</span>
@@ -136,7 +137,7 @@ export function AppLayout({ children, guildId, requesterId }: AppLayoutProps) {
   return (
     <div className="h-screen bg-black text-white flex flex-col">
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar playlists={playlists} />
+        <Sidebar playlists={playlists} guildId={guildId} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6">
             {children}
