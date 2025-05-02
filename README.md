@@ -50,6 +50,23 @@ Rename [`.env.example`](./.env.example) file to `.env.local` in the root of your
    npm run start
    ```
 
+## 🚀 Deploy via Vercel CLI
+
+You can deploy this project to Vercel from your local machine using the Vercel CLI:
+
+1. **Prepare Environment Variables:**
+   - Copy your `.env.local` file to `.env` (or create a `.env` file with the required variables listed above).
+   - When you run the deploy command, Vercel will prompt you to enter these environment variables if they are not already set in your Vercel project.
+
+3. **Deploy:**
+   ```bash
+   npm run deploy
+   ```
+   - The first time, Vercel will guide you through login and project setup.
+   - You can set environment variables interactively or through the Vercel dashboard after the first deploy.
+
+> **Tip:** For automated deployments, you can set environment variables in the Vercel dashboard under your project settings after the initial deploy.
+
 ---
 
 ## 🛠️ Support
