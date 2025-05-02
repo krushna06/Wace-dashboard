@@ -4,8 +4,8 @@ import DiscordProvider from 'next-auth/providers/discord';
 const handler = NextAuth({
   providers: [
     DiscordProvider({
-      clientId: process.env.DISCORD_CLIENT_ID as string,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET as string,
+      clientId: '1038037031982481548',
+      clientSecret: 'brwc2Msp7ojNpP5WQjb2VN5kRoVY4oxg',
       authorization: {
         params: {
           scope: 'identify email guilds',

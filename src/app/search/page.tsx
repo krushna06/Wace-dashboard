@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import { musicApi, type Track } from '@/services/api';
 import { AppLayout } from '@/components/AppLayout';
 import { Play } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 const GUILD_ID = '877062059966206002';
-const REQUESTER_ID = '853620650592567304';
 
 export default function SearchPage() {
+  const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Track[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -22,7 +23,7 @@ export default function SearchPage() {
 
     setIsSearching(true);
     try {
-      const results = await musicApi.search(query, REQUESTER_ID, searchSource);
+      const results = await musicApi.search(query, session?.user?.id || '', searchSource);
       setSearchResults(results);
     } catch (error) {
       console.error('Failed to search:', error);
@@ -49,7 +50,7 @@ export default function SearchPage() {
   };
 
   return (
-    <AppLayout>
+    <AppLayout guildId={GUILD_ID} requesterId={session?.user?.id || ''}>
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Search Bar */}
         <div className="p-6">

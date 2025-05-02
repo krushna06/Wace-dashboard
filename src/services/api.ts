@@ -1,9 +1,11 @@
 import axios from 'axios';
 
+const REQUESTER_ID = '853620650592567304';
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL as string,
+  baseURL: 'http://212.192.29.86:10003',
   headers: {
-    'Authorization': process.env.NEXT_PUBLIC_API_AUTH_TOKEN as string,
+    'Authorization': 'dornox06',
   },
 });
 
@@ -201,9 +203,9 @@ export const musicApi = {
     }
   },
 
-  async getPlaylist(id: string, userId: string): Promise<Playlist> {
+  async getPlaylist(id: string): Promise<Playlist> {
     try {
-      const playlists = await this.getPlaylists(userId);
+      const playlists = await this.getPlaylists(REQUESTER_ID);
       
       const playlist = playlists.find(p => p.id === id);
       
@@ -222,7 +224,7 @@ export const musicApi = {
   },
 
   async setShuffle(guildId: string, shuffle: boolean): Promise<void> {
-    await this.patch(`/players/${guildId}`, {
+    await api.patch(`/v1/players/${guildId}`, {
       shuffle
     });
   },

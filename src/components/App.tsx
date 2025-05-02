@@ -5,6 +5,8 @@ import { Search, Home, Volume2, Maximize2, SkipBack, SkipForward, Play, Pause, R
 import { musicApi, type PlayerState, type Track, type Playlist } from '@/services/api';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
+import { Sidebar } from './Sidebar';
+import { PlayerControls } from './PlayerControls';
 
 const GUILD_ID = '877062059966206002';
 const REQUESTER_ID = '853620650592567304';
@@ -20,48 +22,40 @@ export function App() {
   const [searchResults, setSearchResults] = useState<Track[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [volume, setVolume] = useState(100);
-  const [showVolumeNotification, setShowVolumeNotification] = useState(false);
   const [isShuffled, setIsShuffled] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const router = useRouter();
   const params = useParams();
 
-  // ... existing code for fetchPlayerState, fetchPlaylists, fetchPlaylist, useEffect, handleTrackAdded, handlePlayPause, handleSkip, handlePrevious, handleVolumeChange, handleSeek, handleSearch, and handleShuffle functions ...
+  // Fetch player state function for PlayerControls
+  const fetchPlayerState = async () => {
+    try {
+      const state = await musicApi.getPlayer(GUILD_ID);
+      setPlayerState(state);
+      setCurrentTime(state.position);
+      setVolume(state.volume);
+    } catch (error) {
+      console.error('Failed to fetch player state:', error);
+    }
+  };
 
-  const filteredMainQueue = playerState?.queue?.filter(track => track.requesterId === REQUESTER_ID);
+  // ... existing code for fetchPlaylists, fetchPlaylist, useEffect, handleTrackAdded, handleSearch, and handleShuffle functions ...
+
+  const filteredMainQueue = playerState?.queue?.filter(track => track.requester?.id === REQUESTER_ID);
 
   return (
     <div className="flex h-screen bg-zinc-950 text-white">
-      <Sidebar playlists={playlists} />
+      <Sidebar />
       <main className="flex-1 flex flex-col overflow-hidden">
-        <Routes>
-          <Route path="/" element={<HomePage playerState={playerState} filteredMainQueue={filteredMainQueue} />} />
-          <Route path="/search" element={
-            <SearchPage
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              searchSource={searchSource}
-              setSearchSource={setSearchSource}
-              searchResults={searchResults}
-              isSearching={isSearching}
-            />
-          } />
-          <Route path="/playlist/:id" element={<PlaylistPageWrapper />} />
-        </Routes>
+        {/* Page content goes here. In Next.js, this would be handled by the app/page structure. */}
         <PlayerControls
           playerState={playerState}
-          handlePlayPause={handlePlayPause}
-          handleSkip={handleSkip}
-          handlePrevious={handlePrevious}
-          handleSeek={handleSeek}
           currentTime={currentTime}
           volume={volume}
-          handleVolumeChange={handleVolumeChange}
           isShuffled={isShuffled}
-          handleShuffle={handleShuffle}
+          onStateChange={fetchPlayerState}
         />
       </main>
-      {showVolumeNotification && <VolumeNotification volume={volume} />}
     </div>
   );
 } 

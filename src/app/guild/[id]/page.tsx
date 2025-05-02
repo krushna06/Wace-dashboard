@@ -40,7 +40,6 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 
 export default function GuildPage({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession();
-  console.log('Session:', session, 'Status:', status);
   const router = useRouter();
   const [guild, setGuild] = useState<Guild | null>(null);
   const [queue, setQueue] = useState<Track[]>([]);
@@ -54,10 +53,10 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   }, [status, router]);
 
   useEffect(() => {
-    if (status !== 'authenticated' || !session) return;
+    if (status === 'loading') return; // Wait for session to load
 
     const fetchGuildData = async () => {
-      if (!session.accessToken) {
+      if (!session?.accessToken) {
         setIsLoading(false);
         setError('No session token available');
         return;
@@ -122,7 +121,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
     // Set up polling for queue updates
     const interval = setInterval(fetchQueue, 5000);
     return () => clearInterval(interval);
-  }, [status, session, params.id]);
+  }, [session?.accessToken, params.id, status]);
 
   if (status === 'loading' || isLoading) {
     return (
