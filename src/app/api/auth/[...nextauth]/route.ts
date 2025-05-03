@@ -9,6 +9,7 @@ const handler = NextAuth({
       authorization: {
         params: {
           scope: 'identify email guilds',
+          prompt: 'none',
         },
       },
     }),
@@ -32,4 +33,4 @@ const handler = NextAuth({
   },
 });
 
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };
