@@ -3,9 +3,9 @@ import axios from 'axios';
 const REQUESTER_ID = '853620650592567304';
 
 const api = axios.create({
-  baseURL: 'http://212.192.29.86:10003',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL as string,
   headers: {
-    'Authorization': 'dornox06',
+    'Authorization': process.env.NEXT_PUBLIC_API_AUTH_TOKEN,
   },
 });
 
