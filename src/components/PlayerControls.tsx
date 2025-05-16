@@ -19,6 +19,9 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
   const [localVolume, setLocalVolume] = useState<number>(0);
   const [showLoopNotification, setShowLoopNotification] = useState(false);
+  const [showShuffleNotification, setShowShuffleNotification] = useState(false);
+  const [shuffleNotificationText, setShuffleNotificationText] = useState('');
+  const [localShuffle, setLocalShuffle] = useState<boolean>(isShuffled);
   const [loopNotificationText, setLoopNotificationText] = useState('');
 
   React.useEffect(() => {
@@ -114,7 +117,12 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
   const handleShuffle = async () => {
     try {
-      await musicApi.setShuffle(GUILD_ID, !isShuffled);
+      const newShuffle = !localShuffle;
+      await musicApi.setShuffle(GUILD_ID, newShuffle);
+      setLocalShuffle(newShuffle);
+      setShuffleNotificationText(`Shuffle: ${newShuffle ? 'Enabled' : 'Disabled'}`);
+      setShowShuffleNotification(true);
+      setTimeout(() => setShowShuffleNotification(false), 1000);
       onStateChange();
     } catch (error) {
       console.error("Failed to toggle shuffle:", error);
@@ -177,7 +185,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
           <div className="flex items-center gap-4">
             <Shuffle 
               onClick={handleShuffle}
-              className={`w-5 h-5 ${isShuffled ? 'text-white' : 'text-zinc-400'} hover:text-white cursor-pointer transition-colors`}
+              className={`w-5 h-5 ${localShuffle ? 'text-green-400' : 'text-zinc-400'} hover:text-white cursor-pointer transition-colors`}
             />
             <SkipBack 
               onClick={handlePrevious}
@@ -245,6 +253,11 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       {showVolumeNotification && (
         <div className="fixed top-4 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
           Volume: {localVolume}%
+        </div>
+      )}
+      {showShuffleNotification && (
+        <div className="fixed top-12 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+          {shuffleNotificationText}
         </div>
       )}
       {showLoopNotification && (

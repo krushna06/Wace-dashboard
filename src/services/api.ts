@@ -233,9 +233,22 @@ export const musicApi = {
     }
   },
 
+  async getShuffleStatus(guildId: string): Promise<boolean> {
+    try {
+      const { data } = await api.get(`/v1/players/${guildId}/shuffle`);
+      return data.shuffle;
+    } catch (error) {
+      console.error('Error fetching shuffle status:', error);
+      throw error;
+    }
+  },
+
   async setShuffle(guildId: string, shuffle: boolean): Promise<void> {
-    await api.patch(`/v1/players/${guildId}`, {
-      shuffle
-    });
+    try {
+      await api.patch(`/v1/players/${guildId}/shuffle`, { shuffle });
+    } catch (error) {
+      console.error('Error setting shuffle:', error);
+      throw error;
+    }
   },
 };
