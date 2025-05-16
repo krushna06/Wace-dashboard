@@ -101,10 +101,11 @@ export const musicApi = {
     }
   },
 
-  async setLoop(guildId: string, mode: "none" | "track" | "queue"): Promise<void> {
+  async setLoop(guildId: string, mode: "none" | "track" | "queue" | "song"): Promise<void> {
+    const backendMode = mode === 'song' ? 'song' : mode;
     try {
       const { data } = await api.patch(`/v1/players/${guildId}`, {
-        loop: mode,
+        loop: backendMode,
       });
       console.log("Loop mode updated:", data);
     } catch (error) {

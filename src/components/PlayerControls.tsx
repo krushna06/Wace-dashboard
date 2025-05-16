@@ -1,6 +1,7 @@
 'use client'
 
 import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2 } from 'lucide-react';
+import React from 'react';
 import { musicApi, type PlayerState } from '@/services/api';
 import { useState } from 'react';
 
@@ -17,6 +18,22 @@ interface PlayerControlsProps {
 export function PlayerControls({ playerState, currentTime, volume, isShuffled = false, onStateChange }: PlayerControlsProps) {
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
   const [localVolume, setLocalVolume] = useState(volume);
+
+  function backendToUiLoop(mode: string | undefined): 'song' | 'queue' | 'none' {
+    if (mode === 'song') return 'song';
+    if (mode === 'queue') return 'queue';
+    return 'none';
+  }
+  function uiToBackendLoop(mode: 'song' | 'queue' | 'none'): 'song' | 'queue' | 'none' {
+    if (mode === 'song') return 'song';
+    if (mode === 'queue') return 'queue';
+    return 'none';
+  }
+  const [loopMode, setLoopMode] = useState<'song' | 'queue' | 'none'>(backendToUiLoop(playerState?.loop));
+
+  React.useEffect(() => {
+    setLoopMode(backendToUiLoop(playerState?.loop));
+  }, [playerState?.loop]);
 
   const formatTime = (ms: number) => {
     const seconds = Math.floor(ms / 1000);
@@ -90,6 +107,24 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     }
   };
 
+  const handleLoop = async () => {
+    let nextMode: 'song' | 'queue' | 'none';
+    if (loopMode === 'none') nextMode = 'song';
+    else if (loopMode === 'song') nextMode = 'queue';
+    else nextMode = 'none';
+    setLoopMode(nextMode);
+    try {
+      await musicApi.setLoop(GUILD_ID, uiToBackendLoop(nextMode));
+      onStateChange();
+    } catch (error) {
+      console.error('Failed to set loop mode:', error);
+    }
+  };
+
+  let loopColor = 'text-zinc-400 hover:text-white';
+  if (loopMode === 'song') loopColor = 'text-green-400';
+  else if (loopMode === 'queue') loopColor = 'text-pink-400';
+
   return (
     <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
       <div className="flex items-center justify-between max-w-screen-xl mx-auto">
@@ -135,7 +170,10 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
               onClick={handleSkip}
               className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
             />
-            <Repeat className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
+            <Repeat 
+              onClick={handleLoop}
+              className={`w-5 h-5 cursor-pointer transition-colors ${loopColor}`}
+            />
           </div>
           <div className="w-full flex items-center gap-2">
             <span className="text-xs text-zinc-400">

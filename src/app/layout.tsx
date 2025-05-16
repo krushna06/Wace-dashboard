@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Wace Dashboard',
-  description: 'Discord Music Bot Dashboard',
+  description: 'Wace Discord Music Bot Dashboard',
 }
 
 export default function RootLayout({
