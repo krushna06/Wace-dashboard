@@ -18,6 +18,8 @@ interface PlayerControlsProps {
 export function PlayerControls({ playerState, currentTime, volume, isShuffled = false, onStateChange }: PlayerControlsProps) {
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
   const [localVolume, setLocalVolume] = useState<number>(0);
+  const [showLoopNotification, setShowLoopNotification] = useState(false);
+  const [loopNotificationText, setLoopNotificationText] = useState('');
 
   React.useEffect(() => {
     async function fetchVolume() {
@@ -125,6 +127,15 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     else if (loopMode === 'song') nextMode = 'queue';
     else nextMode = 'none';
     setLoopMode(nextMode);
+
+    let loopText = '';
+    if (nextMode === 'song') loopText = 'Loop Type: Song';
+    else if (nextMode === 'queue') loopText = 'Loop Type: Queue';
+    else loopText = 'Loop Type: Disabled';
+    setLoopNotificationText(loopText);
+    setShowLoopNotification(true);
+    setTimeout(() => setShowLoopNotification(false), 1000);
+
     try {
       await musicApi.setLoop(GUILD_ID, uiToBackendLoop(nextMode));
       onStateChange();
@@ -236,6 +247,11 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
           Volume: {localVolume}%
         </div>
       )}
+      {showLoopNotification && (
+        <div className="fixed top-20 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+          {loopNotificationText}
+        </div>
+      )}
     </div>
   );
-} 
+}
