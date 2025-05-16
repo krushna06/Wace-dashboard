@@ -46,6 +46,15 @@ export interface Playlist {
 }
 
 export const musicApi = {
+  async getVolume(guildId: string): Promise<number> {
+    try {
+      const { data } = await api.get(`/v1/players/${guildId}/volume`);
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching volume:', error);
+      throw error;
+    }
+  },
   async getPlayer(guildId: string): Promise<PlayerState> {
     try {
       const { data } = await api.get(`/v1/players/${guildId}`);

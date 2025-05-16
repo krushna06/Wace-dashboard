@@ -17,7 +17,19 @@ interface PlayerControlsProps {
 
 export function PlayerControls({ playerState, currentTime, volume, isShuffled = false, onStateChange }: PlayerControlsProps) {
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
-  const [localVolume, setLocalVolume] = useState(volume);
+  const [localVolume, setLocalVolume] = useState<number>(0);
+
+  React.useEffect(() => {
+    async function fetchVolume() {
+      try {
+        const vol = await musicApi.getVolume(GUILD_ID);
+        setLocalVolume(typeof vol === 'number' ? vol : 50);
+      } catch {
+        setLocalVolume(50);
+      }
+    }
+    fetchVolume();
+  }, []);
 
   function backendToUiLoop(mode: string | undefined): 'song' | 'queue' | 'none' {
     if (mode === 'song') return 'song';
