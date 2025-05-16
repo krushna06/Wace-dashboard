@@ -22,7 +22,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
       
       if (response.status === 429) {
         const data = await response.json();
-        const retryAfter = data.retry_after * 1000; // Convert to milliseconds
+        const retryAfter = data.retry_after * 1000;
         console.log(`Rate limited. Retrying after ${retryAfter}ms...`);
         await sleep(retryAfter);
         continue;
@@ -31,7 +31,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
       return response;
     } catch (error) {
       if (i === maxRetries - 1) throw error;
-      await sleep(1000 * Math.pow(2, i)); // Exponential backoff
+      await sleep(1000 * Math.pow(2, i));
     }
   }
   
@@ -53,7 +53,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   }, [status, router]);
 
   useEffect(() => {
-    if (status === 'loading') return; // Wait for session to load
+    if (status === 'loading') return;
 
     const fetchGuildData = async () => {
       if (!session?.accessToken) {
@@ -106,8 +106,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
     const fetchQueue = async () => {
       try {
         const queueData = await musicApi.getQueue(params.id);
-        // Remove the first track (current track) from the queue
-        setQueue(queueData.slice(1));
+        setQueue(queueData);
       } catch (error) {
         console.error('Failed to fetch queue:', error);
       } finally {
@@ -118,7 +117,6 @@ export default function GuildPage({ params }: { params: { id: string } }) {
     fetchGuildData();
     fetchQueue();
 
-    // Set up polling for queue updates
     const interval = setInterval(fetchQueue, 5000);
     return () => clearInterval(interval);
   }, [session?.accessToken, params.id, status]);
