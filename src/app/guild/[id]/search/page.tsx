@@ -123,7 +123,7 @@ export default function GuildSearchPage({ params }: { params: { id: string } }) 
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-zinc-400">No results found</div>
+                <div className="text-center text-zinc-400">No results found, did you forget to press enter?</div>
               )}
             </>
           ) : (

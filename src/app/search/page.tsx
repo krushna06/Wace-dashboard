@@ -107,7 +107,7 @@ export default function SearchPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-zinc-400">No results found</div>
+                <div className="text-center text-zinc-400">No results found, did you forget to press enter?</div>
               )}
             </>
           ) : (
