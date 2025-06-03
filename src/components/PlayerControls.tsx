@@ -1,11 +1,8 @@
 'use client'
 
-import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2 } from 'lucide-react';
-import React from 'react';
+import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { musicApi, type PlayerState } from '@/services/api';
-import { useState } from 'react';
-
-const GUILD_ID = '877062059966206002';
 
 interface PlayerControlsProps {
   playerState: PlayerState | null;
@@ -13,28 +10,32 @@ interface PlayerControlsProps {
   volume: number;
   isShuffled?: boolean;
   onStateChange: () => void;
+  guildId: string;
 }
 
-export function PlayerControls({ playerState, currentTime, volume, isShuffled = false, onStateChange }: PlayerControlsProps) {
+export function PlayerControls({ playerState, currentTime, volume, isShuffled = false, onStateChange, guildId }: PlayerControlsProps) {
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
-  const [localVolume, setLocalVolume] = useState<number>(0);
+  const [localVolume, setLocalVolume] = useState<number>(volume);
   const [showLoopNotification, setShowLoopNotification] = useState(false);
   const [showShuffleNotification, setShowShuffleNotification] = useState(false);
   const [shuffleNotificationText, setShuffleNotificationText] = useState('');
   const [localShuffle, setLocalShuffle] = useState<boolean>(isShuffled);
   const [loopNotificationText, setLoopNotificationText] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [previousVolume, setPreviousVolume] = useState(volume);
 
   React.useEffect(() => {
     async function fetchVolume() {
       try {
-        const vol = await musicApi.getVolume(GUILD_ID);
+        const vol = await musicApi.getVolume(guildId);
         setLocalVolume(typeof vol === 'number' ? vol : 50);
       } catch {
         setLocalVolume(50);
       }
     }
     fetchVolume();
-  }, []);
+  }, [guildId]);
 
   function backendToUiLoop(mode: string | undefined): 'song' | 'queue' | 'none' {
     if (mode === 'song') return 'song';
@@ -62,7 +63,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const handlePlayPause = async () => {
     if (!playerState) return;
     try {
-      await musicApi.togglePlay(GUILD_ID);
+      await musicApi.togglePlay(guildId);
       onStateChange();
     } catch (error) {
       console.error("Failed to toggle play state:", error);
@@ -71,7 +72,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
   const handleSkip = async () => {
     try {
-      await musicApi.skipTrack(GUILD_ID);
+      await musicApi.skipTrack(guildId);
       onStateChange();
     } catch (error) {
       console.error("Failed to skip track:", error);
@@ -80,7 +81,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
   const handlePrevious = async () => {
     try {
-      await musicApi.previousTrack(GUILD_ID);
+      await musicApi.previousTrack(guildId);
       onStateChange();
     } catch (error) {
       console.error("Failed to go to previous track:", error);
@@ -91,11 +92,22 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     try {
       setLocalVolume(newVolume);
       setShowVolumeNotification(true);
-      await musicApi.setVolume(GUILD_ID, newVolume);
+      if (!isDragging) {
+        await musicApi.setVolume(guildId, newVolume);
+      }
       onStateChange();
       setTimeout(() => setShowVolumeNotification(false), 1000);
     } catch (error) {
       console.error("Failed to change volume:", error);
+    }
+  };
+
+  const handleVolumeDragEnd = async () => {
+    try {
+      setIsDragging(false);
+      await musicApi.setVolume(guildId, localVolume);
+    } catch (error) {
+      console.error('Error setting volume:', error);
     }
   };
 
@@ -108,7 +120,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     const newTime = Math.floor(playerState.current.length * percentage);
     
     try {
-      await musicApi.setPosition(GUILD_ID, newTime);
+      await musicApi.setPosition(guildId, newTime);
       onStateChange();
     } catch (error) {
       console.error('Failed to seek:', error);
@@ -118,7 +130,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const handleShuffle = async () => {
     try {
       const newShuffle = !localShuffle;
-      await musicApi.setShuffle(GUILD_ID, newShuffle);
+      await musicApi.setShuffle(guildId, newShuffle);
       setLocalShuffle(newShuffle);
       setShuffleNotificationText(`Shuffle: ${newShuffle ? 'Enabled' : 'Disabled'}`);
       setShowShuffleNotification(true);
@@ -145,11 +157,23 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     setTimeout(() => setShowLoopNotification(false), 1000);
 
     try {
-      await musicApi.setLoop(GUILD_ID, uiToBackendLoop(nextMode));
+      await musicApi.setLoop(guildId, uiToBackendLoop(nextMode));
       onStateChange();
     } catch (error) {
       console.error('Failed to set loop mode:', error);
     }
+  };
+
+  const handleMute = () => {
+    if (isMuted) {
+      setLocalVolume(previousVolume);
+      musicApi.setVolume(guildId, previousVolume);
+    } else {
+      setPreviousVolume(localVolume);
+      setLocalVolume(0);
+      musicApi.setVolume(guildId, 0);
+    }
+    setIsMuted(!isMuted);
   };
 
   let loopColor = 'text-zinc-400 hover:text-white';
@@ -231,7 +255,16 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
         {/* Volume Controls */}
         <div className="flex items-center gap-4">
-          <Volume2 className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" />
+          <button
+            onClick={handleMute}
+            className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
+          >
+            {isMuted ? (
+              <VolumeX className="w-5 h-5" />
+            ) : (
+              <Volume2 className="w-5 h-5" />
+            )}
+          </button>
           <div className="w-24">
             <div className="relative h-1 bg-zinc-800 rounded-full">
               <input
@@ -240,6 +273,10 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                 max="100"
                 value={localVolume}
                 onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+                onMouseDown={() => setIsDragging(true)}
+                onMouseUp={handleVolumeDragEnd}
+                onTouchStart={() => setIsDragging(true)}
+                onTouchEnd={handleVolumeDragEnd}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               <div 

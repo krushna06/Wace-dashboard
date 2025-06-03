@@ -14,8 +14,10 @@ export default function PlaylistPage({ params }: { params: { id: string; playlis
 
   useEffect(() => {
     const fetchPlaylist = async () => {
+      if (!session?.user?.id) return;
+      
       try {
-        const data = await musicApi.getPlaylist(params.playlistId);
+        const data = await musicApi.getPlaylist(params.playlistId, session.user.id);
         setPlaylist(data);
         setError(null);
       } catch (error) {
@@ -25,7 +27,7 @@ export default function PlaylistPage({ params }: { params: { id: string; playlis
       }
     };
     fetchPlaylist();
-  }, [params.playlistId]);
+  }, [params.playlistId, session?.user?.id]);
 
   const handlePlayTrack = async (track: Track) => {
     try {

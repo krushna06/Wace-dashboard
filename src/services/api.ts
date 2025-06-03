@@ -1,14 +1,11 @@
 import axios from 'axios';
 
-const REQUESTER_ID = '853620650592567304';
-
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL as string,
   headers: {
     'Authorization': process.env.NEXT_PUBLIC_API_AUTH_TOKEN,
   },
 });
-
 
 export interface Track {
   title: string;
@@ -202,10 +199,9 @@ export const musicApi = {
     }
   },
 
-  async getPlaylists(userId: string): Promise<Playlist[]> {
+  async getPlaylists(requesterId: string): Promise<Playlist[]> {
     try {
-      const { data } = await api.get(`/v1/playlists/${userId}`);
-      console.log("Playlists fetched:", data);
+      const { data } = await api.get(`/v1/playlists/${requesterId}`);
       return data.data || [];
     } catch (error) {
       console.error("Error fetching playlists:", error);
@@ -213,9 +209,9 @@ export const musicApi = {
     }
   },
 
-  async getPlaylist(id: string): Promise<Playlist> {
+  async getPlaylist(id: string, requesterId: string): Promise<Playlist> {
     try {
-      const playlists = await this.getPlaylists(REQUESTER_ID);
+      const playlists = await this.getPlaylists(requesterId);
       
       const playlist = playlists.find(p => p.id === id);
       

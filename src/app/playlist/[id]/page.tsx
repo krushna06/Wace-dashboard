@@ -6,8 +6,6 @@ import { AppLayout } from '@/components/AppLayout';
 import { Play, ListMusic } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
-const GUILD_ID = '877062059966206002';
-
 export default function PlaylistPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
@@ -16,8 +14,10 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const fetchPlaylist = async () => {
+      if (!session?.user?.id) return;
+      
       try {
-        const data = await musicApi.getPlaylist(params.id);
+        const data = await musicApi.getPlaylist(params.id, session.user.id);
         setPlaylist(data);
         setError(null);
       } catch (error) {
@@ -29,11 +29,13 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
     };
 
     fetchPlaylist();
-  }, [params.id]);
+  }, [params.id, session?.user?.id]);
 
   const handlePlayTrack = async (track: Track) => {
+    if (!session?.user?.id) return;
+    
     try {
-      await musicApi.addTrack(GUILD_ID, track.uri);
+      await musicApi.addTrack(params.id, track.uri);
     } catch (error) {
       console.error('Failed to play track:', error);
     }
@@ -41,7 +43,7 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <AppLayout guildId={GUILD_ID} requesterId={session?.user?.id || ''}>
+      <AppLayout guildId={params.id} requesterId={session?.user?.id || ''}>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
         </div>
@@ -51,7 +53,7 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
 
   if (error) {
     return (
-      <AppLayout guildId={GUILD_ID} requesterId={session?.user?.id || ''}>
+      <AppLayout guildId={params.id} requesterId={session?.user?.id || ''}>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
           <div className="text-red-500">{error}</div>
         </div>
@@ -60,7 +62,7 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <AppLayout guildId={GUILD_ID} requesterId={session?.user?.id || ''}>
+    <AppLayout guildId={params.id} requesterId={session?.user?.id || ''}>
       <div className="flex items-center gap-6 mb-8">
         <div className="w-48 h-48 bg-zinc-800 rounded-lg flex items-center justify-center">
           <ListMusic className="w-16 h-16 text-zinc-600" />

@@ -4,16 +4,18 @@ import { Home, Search, ListMusic } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { musicApi, type Playlist } from '@/services/api';
-
-const GUILD_ID = '877062059966206002';
+import { useSession } from 'next-auth/react';
 
 export function Sidebar({ guildId }: { guildId?: string }) {
+  const { data: session } = useSession();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
   useEffect(() => {
     const fetchPlaylists = async () => {
+      if (!session?.user?.id) return;
+      
       try {
-        const playlistsData = await musicApi.getPlaylists(GUILD_ID);
+        const playlistsData = await musicApi.getPlaylists(session.user.id);
         setPlaylists(playlistsData);
       } catch (error) {
         console.error('Failed to fetch playlists:', error);
@@ -21,7 +23,7 @@ export function Sidebar({ guildId }: { guildId?: string }) {
     };
 
     fetchPlaylists();
-  }, []);
+  }, [session?.user?.id]);
 
   return (
     <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
