@@ -155,6 +155,7 @@ export function AppLayout({ children, guildId, requesterId }: AppLayoutProps) {
         currentTime={currentTime}
         volume={volume}
         onStateChange={fetchPlayerState}
+        guildId={guildId}
       />
     </div>
   );
