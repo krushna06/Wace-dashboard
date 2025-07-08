@@ -32,8 +32,12 @@ export default function GuildSearchPage({ params }: { params: { id: string } }) 
   };
 
   const handlePlayTrack = async (track: Track) => {
+    if (!session?.user?.id) {
+      console.error('User ID is missing. Cannot play track.');
+      return;
+    }
     try {
-      await musicApi.addTrack(params.id, track.uri);
+      await musicApi.playTrack(params.id, session.user.id, track.title);
     } catch (error) {
       console.error('Failed to play track:', error);
     }

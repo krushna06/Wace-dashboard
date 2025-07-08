@@ -30,10 +30,14 @@ export default function PlaylistPage({ params }: { params: { id: string; playlis
   }, [params.playlistId, session?.user?.id]);
 
   const handlePlayTrack = async (track: Track) => {
+    if (!session?.user?.id) {
+      console.error('User ID is missing. Cannot play track.');
+      return;
+    }
     try {
-      await musicApi.addTrack(params.id, track.uri);
+      await musicApi.playTrack(params.id, session.user.id, track.title);
     } catch (error) {
-      console.error("Failed to play track:", error);
+      console.error('Failed to play track:', error);
     }
   };
 

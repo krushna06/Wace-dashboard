@@ -247,4 +247,17 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async playTrack(guildId: string, userId: string, search: string): Promise<void> {
+    try {
+      await api.post('/v1/players/play', {
+        guildId,
+        userId,
+        search,
+      });
+    } catch (error) {
+      console.error('Failed to play track:', error);
+      throw error;
+    }
+  },
 };
