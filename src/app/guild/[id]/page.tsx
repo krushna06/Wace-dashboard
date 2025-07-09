@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
-import { musicApi, type Track } from '@/services/api';
+import { musicApi, type Track, checkIfUserIsDJ } from '@/services/api';
 import { Play } from 'lucide-react';
+import axios from 'axios';
 
 interface Guild {
   id: string;
@@ -45,6 +46,8 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   const [queue, setQueue] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [djChecked, setDjChecked] = useState(false);
+  const [isDJ, setIsDJ] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -55,15 +58,40 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (status === 'loading') return;
 
-    const fetchGuildData = async () => {
-      if (!session?.accessToken) {
+    const checkDJ = async () => {
+      const userId = session?.user?.id;
+      const guildId = params.id;
+      if (!userId || !guildId) {
+        setError('Missing user or guild ID.');
         setIsLoading(false);
-        setError('No session token available');
+        setIsDJ(false);
+        setDjChecked(true);
         return;
       }
+      const isDJ = await checkIfUserIsDJ(guildId, userId);
+      if (!isDJ) {
+        setError('You are not a DJ in this server. Access denied.');
+        setIsLoading(false);
+        setIsDJ(false);
+        setDjChecked(true);
+        return;
+      }
+      setIsDJ(true);
+      setDjChecked(true);
+    };
 
+    checkDJ();
+  }, [session?.user?.id, params.id, status]);
+
+  useEffect(() => {
+    if (!djChecked || !isDJ) return;
+    if (!session?.accessToken) {
+      setIsLoading(false);
+      setError('No session token available');
+      return;
+    }
+    const fetchGuildData = async () => {
       try {
-        console.log('Fetching guilds with token:', session.accessToken);
         const response = await fetchWithRetry(
           `https://discord.com/api/users/@me/guilds`,
           {
@@ -72,56 +100,39 @@ export default function GuildPage({ params }: { params: { id: string } }) {
             },
           }
         );
-
-        console.log('Response status:', response.status);
-        
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('API Error:', errorText);
           throw new Error(`Failed to fetch guilds: ${response.status} ${errorText}`);
         }
-
         const guilds = await response.json();
-        console.log('Fetched guilds:', guilds);
-        
         const currentGuild = guilds.find((g: Guild) => g.id === params.id);
-        console.log('Looking for guild ID:', params.id);
-        console.log('Found guild:', currentGuild);
-
         if (!currentGuild) {
           setError(`Guild not found or you do not have access to it. Guild ID: ${params.id}`);
           setIsLoading(false);
           return;
         }
-
         setGuild(currentGuild);
       } catch (error) {
-        console.error('Failed to fetch guild:', error);
         setError(error instanceof Error ? error.message : 'Failed to fetch guild information');
       } finally {
         setIsLoading(false);
       }
     };
-
     const fetchQueue = async () => {
       try {
         const queueData = await musicApi.getQueue(params.id);
         setQueue(queueData);
       } catch (error) {
-        console.error('Failed to fetch queue:', error);
-      } finally {
-        setIsLoading(false);
+        // ignore
       }
     };
-
     fetchGuildData();
     fetchQueue();
-
     const interval = setInterval(fetchQueue, 5000);
     return () => clearInterval(interval);
-  }, [session?.accessToken, params.id, status]);
+  }, [djChecked, isDJ, session?.accessToken, params.id]);
 
-  if (status === 'loading' || isLoading) {
+  if (status === 'loading' || isLoading || !djChecked) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>

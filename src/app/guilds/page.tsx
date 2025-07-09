@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserProfile } from '@/components/UserProfile';
+import axios from 'axios';
+import { checkIfUserIsDJ } from '@/services/api';
 
 interface Guild {
   id: string;
@@ -19,6 +21,7 @@ export default function GuildsPage() {
   const router = useRouter();
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -50,6 +53,21 @@ export default function GuildsPage() {
 
     fetchGuilds();
   }, [session?.accessToken]);
+
+  const handleGuildClick = async (guildId: string) => {
+    setError(null);
+    const userId = session?.user?.id;
+    if (!userId) {
+      setError('No user ID found in session.');
+      return;
+    }
+    const isDJ = await checkIfUserIsDJ(guildId, userId);
+    if (!isDJ) {
+      setError('You are not a DJ in this server. Access denied.');
+      return;
+    }
+    router.push(`/guild/${guildId}`);
+  };
 
   if (status === 'loading' || loading) {
     return (
@@ -89,15 +107,18 @@ export default function GuildsPage() {
                   </p>
                 </div>
               </div>
-              <Link
-                href={`/guild/${guild.id}`}
+              <button
+                onClick={() => handleGuildClick(guild.id)}
                 className="bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
               >
                 View
-              </Link>
+              </button>
             </div>
           ))}
         </div>
+        {error && (
+          <div className="text-red-500 text-center mt-4">{error}</div>
+        )}
       </div>
     </div>
   );

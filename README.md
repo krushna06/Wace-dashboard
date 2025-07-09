@@ -73,3 +73,21 @@ You can deploy this project to Vercel from your local machine using the Vercel C
 
 For support, contact me on Discord: **n0step\_**
 Or join the community: [https://discord.gg/gWRhsZHHeb](https://discord.gg/gWRhsZHHeb)
+
+## DJ_ONLY Feature
+
+To restrict access to guild pages only to users who are DJs:
+
+1. Add the following to your `.env` file:
+
+```
+NEXT_PUBLIC_DJ_ONLY=true
+```
+
+2. If set to `true`, when a user tries to access a guild page, the app will call the DJ API to check if the user is a DJ in that guild. If not, access will be denied.
+
+If you want to disable this restriction, set:
+
+```
+NEXT_PUBLIC_DJ_ONLY=false
+```

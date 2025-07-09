@@ -261,3 +261,20 @@ export const musicApi = {
     }
   },
 };
+
+export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<boolean> {
+  console.log('DJ_ONLY:', process.env.NEXT_PUBLIC_DJ_ONLY);
+  if (process.env.NEXT_PUBLIC_DJ_ONLY !== 'true') return true;
+  if (!guildId || !userId) return false;
+  try {
+    console.log('Calling DJ API via api instance:', guildId, userId);
+    const response = await api.get(`/v1/dj/${guildId}/userid`, {
+      params: { userid: userId },
+    });
+    console.log('DJ API response:', response.data);
+    return response.data?.data === 1;
+  } catch (err) {
+    console.log('DJ API error:', err);
+    return false;
+  }
+}
