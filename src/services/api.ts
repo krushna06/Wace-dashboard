@@ -309,6 +309,27 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async getLanguage(guildId: string, authToken?: string): Promise<{ language: string; available: string[] }> {
+    try {
+      const headers = authToken ? { Authorization: authToken } : undefined;
+      const { data } = await api.get(`/v1/language/${guildId}`, { headers });
+      return data;
+    } catch (error) {
+      console.error('Error fetching language:', error);
+      throw error;
+    }
+  },
+  async setLanguage(guildId: string, language: string, authToken?: string): Promise<{ success: boolean; language: string }> {
+    try {
+      const headers = authToken ? { Authorization: authToken } : undefined;
+      const { data } = await api.patch(`/v1/language/${guildId}`, { language }, { headers });
+      return data;
+    } catch (error) {
+      console.error('Error updating language:', error);
+      throw error;
+    }
+  },
 };
 
 export interface TrendingTrack {

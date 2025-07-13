@@ -250,6 +250,14 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </ul>
         </div>
       )}
+      {!isCollapsed && guildId && (
+        <div className="mt-auto">
+          <Link href={`/guild/${guildId}/settings`} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 transition-colors text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg>
+            Settings
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
