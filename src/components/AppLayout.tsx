@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { musicApi, type PlayerState, type Playlist } from '@/services/api';
 import { PlayerControls } from '@/components/PlayerControls';
 import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
@@ -126,8 +126,11 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
       {!isCollapsed && (
         <div className="relative guild-selector">
           <button
-            onClick={() => setShowGuildDropdown(!showGuildDropdown)}
+            onClick={() => {
+              if (session?.accessToken) setShowGuildDropdown(!showGuildDropdown);
+            }}
             className="w-full flex items-center justify-between p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors text-left"
+            disabled={!session?.accessToken}
           >
             <div className="flex items-center gap-2 min-w-0">
               {currentGuild?.icon ? (
@@ -142,13 +145,12 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
                 </div>
               )}
               <span className="truncate text-sm font-medium">
-                {currentGuild?.name || 'Loading...'}
+                {session?.accessToken ? (currentGuild?.name || 'Select a guild') : 'Select a guild'}
               </span>
             </div>
             <ChevronDown className={`w-4 h-4 transition-transform ${showGuildDropdown ? 'rotate-180' : ''}`} />
           </button>
-          
-          {showGuildDropdown && (
+          {showGuildDropdown && session?.accessToken && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
               {loading ? (
                 <div className="p-2 text-center text-zinc-400 text-sm">Loading servers...</div>
@@ -271,7 +273,7 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
 
 function NowPlaying({ playerState }: { playerState: PlayerState | null }) {
   return (
-    <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
+    <div className="w-64 bg-[#121212] p-6 flex flex-col gap-6">
       <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Now Playing</h2>
       {playerState?.current ? (
         <div className="flex flex-col gap-4">
@@ -318,6 +320,9 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
   const [volume, setVolume] = useState(100);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const pathname = usePathname();
+  const [guildSearchQuery, setGuildSearchQuery] = useState('');
+  const guildSearchInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPlayerState = async () => {
     if (!guildId) {
@@ -379,21 +384,22 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
           <div className="flex items-center justify-between p-4 border-b border-zinc-900">
             <div className="flex-1"></div>
             <div className="flex items-center max-w-4xl w-full">
-              {guildId ? (
-                <button
-                  onClick={onOpenSpotlight}
-                  className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left hover:bg-zinc-700 transition-colors flex items-center gap-3"
-                >
-                  <Search className="w-5 h-5 text-zinc-400" />
-                  <span>Search for music...</span>
-                </button>
+              {pathname === '/guilds' ? (
+                <input
+                  ref={guildSearchInputRef}
+                  type="text"
+                  value={guildSearchQuery}
+                  onChange={e => setGuildSearchQuery(e.target.value)}
+                  placeholder="Search for a server..."
+                  className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-zinc-700 hover:bg-zinc-700 transition-colors"
+                />
               ) : (
                 <button
                   onClick={onOpenSpotlight}
                   className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left hover:bg-zinc-700 transition-colors flex items-center gap-3"
                 >
                   <Search className="w-5 h-5 text-zinc-400" />
-                  <span>Search for music (select a server to play)</span>
+                  <span>Search for music...</span>
                 </button>
               )}
             </div>
