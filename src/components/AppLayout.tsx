@@ -349,8 +349,19 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
         />
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-zinc-900">
-            <h1 className="text-xl font-bold ml-4">Wace Dashboard</h1>
-            <UserProfile />
+            <div className="flex-1"></div>
+            <div className="flex items-center max-w-4xl w-full">
+              <button
+                onClick={onOpenSpotlight}
+                className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left hover:bg-zinc-700 transition-colors flex items-center gap-3"
+              >
+                <Search className="w-5 h-5 text-zinc-400" />
+                <span>Search for music...</span>
+              </button>
+            </div>
+            <div className="flex-1 flex justify-end">
+              <UserProfile />
+            </div>
           </div>
           <div className="flex-1 overflow-y-auto p-6">
             {children}

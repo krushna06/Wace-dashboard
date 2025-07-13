@@ -173,28 +173,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
       />
       <AppLayout guildId={guild.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
         <div className="flex-1 flex flex-col h-full">
-        <div className="flex-none p-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center gap-4">
-              {guild.icon ? (
-                <img
-                  src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                  alt={guild.name}
-                  className="w-16 h-16 rounded-full"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center">
-                  <span className="text-2xl font-bold">{guild.name.charAt(0)}</span>
-                </div>
-              )}
-              <div>
-                <h1 className="text-3xl font-bold">{guild.name}</h1>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 p-8 pt-0 overflow-hidden">
+        <div className="flex-1 p-8 overflow-hidden">
           <div className="max-w-4xl mx-auto h-full">
             <div className="h-full flex flex-col">
               <h2 className="text-2xl font-bold mb-4">Upcoming Songs</h2>
