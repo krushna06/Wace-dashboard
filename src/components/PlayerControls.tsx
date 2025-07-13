@@ -1,6 +1,6 @@
 'use client'
 
-import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX, Filter, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { musicApi, type PlayerState } from '@/services/api';
 
@@ -24,6 +24,16 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const [isDragging, setIsDragging] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [previousVolume, setPreviousVolume] = useState(volume);
+  
+  const [availableFilters, setAvailableFilters] = useState<string[]>([]);
+  const [currentFilter, setCurrentFilter] = useState<{ filter: string; amount?: number } | null>(null);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [showFilterNotification, setShowFilterNotification] = useState(false);
+  const [filterNotificationText, setFilterNotificationText] = useState('');
+  const [bassAmount, setBassAmount] = useState(5);
+  const [speedAmount, setSpeedAmount] = useState(5);
+  const [filtersLoading, setFiltersLoading] = useState(true);
+  const filterDropdownRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     async function fetchVolume() {
@@ -36,6 +46,42 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     }
     fetchVolume();
   }, [guildId]);
+
+  React.useEffect(() => {
+    async function fetchFilters() {
+      setFiltersLoading(true);
+      try {
+        const [filters, current] = await Promise.all([
+          musicApi.getAvailableFilters(),
+          musicApi.getCurrentFilter(guildId)
+        ]);
+        setAvailableFilters(filters);
+        setCurrentFilter(current);
+      } catch (error) {
+        console.error('Error fetching filters:', error);
+        setAvailableFilters(['nightcore', 'bass', 'vaporwave', 'earrape', 'pop', 'electronic', 'party', 'karaoke', '3d', 'china', 'darthvader', 'daycore', 'doubletime', 'pitch', 'rate', 'speed', 'soft', 'tremolo', 'vibrato', 'treblebass']);
+      } finally {
+        setFiltersLoading(false);
+      }
+    }
+    fetchFilters();
+  }, [guildId]);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
+        setShowFilterDropdown(false);
+      }
+    }
+
+    if (showFilterDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFilterDropdown]);
 
   function backendToUiLoop(mode: string | undefined): 'song' | 'queue' | 'none' {
     if (mode === 'song') return 'song';
@@ -176,6 +222,34 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     setIsMuted(!isMuted);
   };
 
+  const handleApplyFilter = async (filter: string, amount?: number) => {
+    try {
+      await musicApi.applyFilter(guildId, filter, amount);
+      setCurrentFilter({ filter, amount });
+      setFilterNotificationText(`Filter applied: ${filter}${amount ? ` (${amount})` : ''}`);
+      setShowFilterNotification(true);
+      setTimeout(() => setShowFilterNotification(false), 1000);
+      setShowFilterDropdown(false);
+      onStateChange();
+    } catch (error) {
+      console.error('Failed to apply filter:', error);
+    }
+  };
+
+  const handleClearFilters = async () => {
+    try {
+      await musicApi.clearFilters(guildId);
+      setCurrentFilter(null);
+      setFilterNotificationText('All filters cleared');
+      setShowFilterNotification(true);
+      setTimeout(() => setShowFilterNotification(false), 1000);
+      setShowFilterDropdown(false);
+      onStateChange();
+    } catch (error) {
+      console.error('Failed to clear filters:', error);
+    }
+  };
+
   let loopColor = 'text-zinc-400 hover:text-white';
   if (loopMode === 'song') loopColor = 'text-green-400';
   else if (loopMode === 'queue') loopColor = 'text-pink-400';
@@ -229,6 +303,111 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
               onClick={handleLoop}
               className={`w-5 h-5 cursor-pointer transition-colors ${loopColor}`}
             />
+            <div className="relative" ref={filterDropdownRef}>
+              <button
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                className="p-1 transition-colors"
+                title={`Audio Filters${currentFilter ? ` - ${currentFilter.filter}${currentFilter.amount ? ` (${currentFilter.amount})` : ''}` : ''}`}
+              >
+                <Filter 
+                  className={`w-5 h-5 ${
+                    currentFilter ? 'text-green-400' : 'text-zinc-400'
+                  } hover:text-white`}
+                />
+              </button>
+              {showFilterDropdown && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
+                  <div className="p-2">
+                    <div className="text-xs text-zinc-400 mb-2 px-2">Audio Filters</div>
+                    {currentFilter && (
+                      <div className="mb-2 p-2 bg-zinc-700 rounded text-xs">
+                        <div className="flex items-center justify-between">
+                          <span>Current: {currentFilter.filter}</span>
+                          <button
+                            onClick={handleClearFilters}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {currentFilter.amount && (
+                          <span className="text-zinc-400">Amount: {currentFilter.amount}</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="max-h-48 overflow-y-auto scrollbar-custom space-y-1">
+                      {filtersLoading ? (
+                        <div className="px-2 py-1 text-sm text-zinc-400">Loading filters...</div>
+                      ) : availableFilters.length > 0 ? (
+                        availableFilters.map((filter) => (
+                          <button
+                            key={filter}
+                            onClick={() => {
+                              if (filter === 'bass') {
+                                handleApplyFilter(filter, bassAmount);
+                              } else if (filter === 'speed') {
+                                handleApplyFilter(filter, speedAmount);
+                              } else {
+                                handleApplyFilter(filter);
+                              }
+                            }}
+                            className="w-full text-left px-2 py-1 text-sm hover:bg-zinc-700 rounded transition-colors"
+                          >
+                            {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-2 py-1 text-sm text-zinc-400">No filters available</div>
+                      )}
+                    </div>
+                    {availableFilters.includes('bass') && (
+                      <div className="mt-2 p-2 border-t border-zinc-700">
+                        <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
+                          <span>Bass Amount</span>
+                          <span>{bassAmount}</span>
+                        </div>
+                        <div className="relative h-1 bg-zinc-600 rounded-full">
+                          <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            value={bassAmount}
+                            onChange={(e) => setBassAmount(parseInt(e.target.value))}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                          <div 
+                            className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                            style={{ width: `${(bassAmount / 10) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {availableFilters.includes('speed') && (
+                      <div className="mt-2 p-2 border-t border-zinc-700">
+                        <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
+                          <span>Speed Amount</span>
+                          <span>{speedAmount}</span>
+                        </div>
+                        <div className="relative h-1 bg-zinc-600 rounded-full">
+                          <input
+                            type="range"
+                            min="1"
+                            max="10"
+                            value={speedAmount}
+                            onChange={(e) => setSpeedAmount(parseInt(e.target.value))}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          />
+                          <div 
+                            className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                            style={{ width: `${(speedAmount / 10) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="w-full flex items-center gap-2">
             <span className="text-xs text-zinc-400">
@@ -300,6 +479,11 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       {showLoopNotification && (
         <div className="fixed top-20 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
           {loopNotificationText}
+        </div>
+      )}
+      {showFilterNotification && (
+        <div className="fixed top-28 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+          {filterNotificationText}
         </div>
       )}
     </div>

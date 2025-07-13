@@ -260,6 +260,55 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async getAvailableFilters(): Promise<string[]> {
+    try {
+      const { data } = await api.get('/v1/filters');
+      const commandFilters = data.data?.commandFilters?.map((filter: any) => filter.name) || [];
+      const wacelinkFilters = data.data?.wacelinkFilters?.map((filter: any) => filter.name) || [];
+      
+      const allFilters = Array.from(new Set([...commandFilters, ...wacelinkFilters]));
+      return allFilters;
+    } catch (error) {
+      console.error('Error fetching available filters:', error);
+      throw error;
+    }
+  },
+
+  async getCurrentFilter(guildId: string): Promise<{ filter: string; amount?: number } | null> {
+    try {
+      const { data } = await api.get(`/v1/filters/${guildId}`);
+      return data.filter || data.data?.filter || null;
+    } catch (error) {
+      console.error('Error fetching current filter:', error);
+      throw error;
+    }
+  },
+
+  async applyFilter(guildId: string, filter: string, amount?: number): Promise<void> {
+    try {
+      const payload: { filter: string; amount?: number } = { filter };
+      if (amount !== undefined) {
+        payload.amount = amount;
+      }
+      
+      await api.post(`/v1/filters/${guildId}`, payload);
+      console.log('Filter applied:', filter, amount ? `with amount ${amount}` : '');
+    } catch (error) {
+      console.error('Error applying filter:', error);
+      throw error;
+    }
+  },
+
+  async clearFilters(guildId: string): Promise<void> {
+    try {
+      await api.delete(`/v1/filters/${guildId}`);
+      console.log('Filters cleared');
+    } catch (error) {
+      console.error('Error clearing filters:', error);
+      throw error;
+    }
+  },
 };
 
 export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<boolean> {
