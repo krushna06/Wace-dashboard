@@ -348,6 +348,16 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async checkUserAndBotInGuild(guildId: string, userId: string): Promise<{ inGuild: boolean; inSameVoice: boolean; userVoiceChannelId?: string; botVoiceChannelId?: string }> {
+    try {
+      const { data } = await api.get(`/v1/guild-checker/${guildId}/${userId}`);
+      return data;
+    } catch (error) {
+      console.error('Error checking user and bot in guild:', error);
+      throw error;
+    }
+  },
 };
 
 export interface TrendingTrack {
