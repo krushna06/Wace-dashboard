@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { musicApi, type PlayerState, type Playlist } from '@/services/api';
 import { PlayerControls } from '@/components/PlayerControls';
-import { Search, Home, ListMusic, Play } from 'lucide-react';
+import { Search, Home, ListMusic, Play, Server, Compass } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { UserProfile } from '@/components/UserProfile';
@@ -21,6 +21,14 @@ function Sidebar({ playlists, guildId, onOpenSpotlight }: { playlists: Playlist[
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Home className="w-6 h-6" />
         <Link href={`/guild/${guildId}`} className="hover:text-white transition-colors">Home</Link>
+      </div>
+      <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+        <Server className="w-6 h-6" />
+        <Link href="/guilds" className="hover:text-white transition-colors">Server</Link>
+      </div>
+      <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+        <Compass className="w-6 h-6" />
+        <Link href={`/guild/${guildId}/explore`} className="hover:text-white transition-colors">Explore</Link>
       </div>
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Search className="w-6 h-6" />

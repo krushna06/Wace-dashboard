@@ -16,6 +16,8 @@ Rename [`.env.example`](./.env.example) file to `.env.local` in the root of your
 | `DISCORD_CLIENT_SECRET`      | Your Discord bot's client secret (also from the Developer Portal).                                                       |
 | `NEXTAUTH_URL`               | The public URL where this web player will be hosted.                                                                     |
 | `NEXTAUTH_SECRET`            | A random string used to secure sessions (no spaces).                                                                     |
+| `NEXT_PUBLIC_SPOTIFY_CLIENT_ID` | Your Spotify Client ID for trending songs (optional).                                                                   |
+| `NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET` | Your Spotify Client Secret for trending songs (optional).                                                             |
 
 > 🔁 **Important:** In the [Discord Developer Portal](https://discord.com/developers/applications), under **OAuth2 → Redirects**, add the following URL:
 >

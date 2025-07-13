@@ -1,6 +1,6 @@
 'use client'
 
-import { Home, Search, ListMusic } from 'lucide-react';
+import { Home, Search, ListMusic, Server, Compass } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { musicApi, type Playlist } from '@/services/api';
@@ -30,6 +30,14 @@ export function Sidebar({ guildId, onOpenSpotlight }: { guildId?: string; onOpen
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Home className="w-6 h-6" />
         <Link href={guildId ? `/guild/${guildId}` : "/"} className="hover:text-white transition-colors">Home</Link>
+      </div>
+      <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+        <Server className="w-6 h-6" />
+        <Link href="/guilds" className="hover:text-white transition-colors">Server</Link>
+      </div>
+      <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
+        <Compass className="w-6 h-6" />
+        <Link href={guildId ? `/guild/${guildId}/explore` : "/explore"} className="hover:text-white transition-colors">Explore</Link>
       </div>
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Search className="w-6 h-6" />
