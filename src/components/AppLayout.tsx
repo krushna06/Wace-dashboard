@@ -21,14 +21,14 @@ interface Guild {
 
 interface AppLayoutProps {
   children: React.ReactNode;
-  guildId: string;
+  guildId?: string;
   requesterId: string;
   onOpenSpotlight: () => void;
 }
 
 function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }: { 
   playlists: Playlist[]; 
-  guildId: string; 
+  guildId?: string; 
   onOpenSpotlight: () => void;
   isCollapsed: boolean;
   onToggle: () => void;
@@ -184,18 +184,20 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
 
       {!isCollapsed && <hr className="border-zinc-800" />}
 
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
-        pathname === `/guild/${guildId}` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-      }`}>
-        <div className="w-6 h-6 flex-shrink-0">
-          <Home className="w-6 h-6" />
+      {guildId && (
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+          pathname === `/guild/${guildId}` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+        }`}>
+          <div className="w-6 h-6 flex-shrink-0">
+            <Home className="w-6 h-6" />
+          </div>
+          {!isCollapsed && (
+            <Link href={`/guild/${guildId}`} className="hover:text-white transition-colors">
+              <span>Home</span>
+            </Link>
+          )}
         </div>
-        {!isCollapsed && (
-          <Link href={`/guild/${guildId}`} className="hover:text-white transition-colors">
-            <span>Home</span>
-          </Link>
-        )}
-      </div>
+      )}
       <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
         pathname === '/guilds' ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
       }`}>
@@ -208,33 +210,37 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
-        pathname === `/guild/${guildId}/explore` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-      }`}>
-        <div className="w-6 h-6 flex-shrink-0">
-          <Compass className="w-6 h-6" />
+      {guildId && (
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+          pathname === `/guild/${guildId}/explore` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+        }`}>
+          <div className="w-6 h-6 flex-shrink-0">
+            <Compass className="w-6 h-6" />
+          </div>
+          {!isCollapsed && (
+            <Link href={`/guild/${guildId}/explore`} className="hover:text-white transition-colors">
+              <span>Explore</span>
+            </Link>
+          )}
         </div>
-        {!isCollapsed && (
-          <Link href={`/guild/${guildId}/explore`} className="hover:text-white transition-colors">
-            <span>Explore</span>
-          </Link>
-        )}
-      </div>
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
-        pathname === `/guild/${guildId}/search` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-      }`}>
-        <div className="w-6 h-6 flex-shrink-0">
-          <Search className="w-6 h-6" />
+      )}
+      {guildId && (
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+          pathname === `/guild/${guildId}/search` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+        }`}>
+          <div className="w-6 h-6 flex-shrink-0">
+            <Search className="w-6 h-6" />
+          </div>
+          {!isCollapsed && (
+            <button 
+              onClick={onOpenSpotlight} 
+              className="hover:text-white transition-colors text-left"
+            >
+              <span>Search</span>
+            </button>
+          )}
         </div>
-        {!isCollapsed && (
-          <button 
-            onClick={onOpenSpotlight} 
-            className="hover:text-white transition-colors text-left"
-          >
-            <span>Search</span>
-          </button>
-        )}
-      </div>
+      )}
       
       {!isCollapsed && <hr className="border-zinc-800" />}
       
@@ -248,11 +254,13 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
             {playlists.map((playlist) => (
               <li key={playlist.id} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate">
-                <Link href={`/guild/${guildId}/playlist/${playlist.id}`} className="flex items-center gap-2">
-                  <ListMusic className="w-4 h-4" />
-                  <span>{playlist.name}</span>
-                  <span className="text-xs text-zinc-600">({playlist.trackCount})</span>
-                </Link>
+                {guildId && (
+                  <Link href={`/guild/${guildId}/playlist/${playlist.id}`} className="flex items-center gap-2">
+                    <ListMusic className="w-4 h-4" />
+                    <span>{playlist.name}</span>
+                    <span className="text-xs text-zinc-600">({playlist.trackCount})</span>
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -313,6 +321,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const fetchPlayerState = async () => {
+    if (!guildId) return;
     try {
       const state = await musicApi.getPlayer(guildId);
       setPlayerState(state);
@@ -368,13 +377,20 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
           <div className="flex items-center justify-between p-4 border-b border-zinc-900">
             <div className="flex-1"></div>
             <div className="flex items-center max-w-4xl w-full">
-              <button
-                onClick={onOpenSpotlight}
-                className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left hover:bg-zinc-700 transition-colors flex items-center gap-3"
-              >
-                <Search className="w-5 h-5 text-zinc-400" />
-                <span>Search for music...</span>
-              </button>
+              {guildId ? (
+                <button
+                  onClick={onOpenSpotlight}
+                  className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left hover:bg-zinc-700 transition-colors flex items-center gap-3"
+                >
+                  <Search className="w-5 h-5 text-zinc-400" />
+                  <span>Search for music...</span>
+                </button>
+              ) : (
+                <div className="w-full bg-zinc-800 text-zinc-400 px-4 py-2 rounded-lg flex items-center gap-3">
+                  <Search className="w-5 h-5 text-zinc-400" />
+                  <span className="text-zinc-400">Search for servers...</span>
+                </div>
+              )}
             </div>
             <div className="flex-1 flex justify-end">
               <UserProfile />
@@ -386,13 +402,15 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
         </div>
         <NowPlaying playerState={playerState} />
       </div>
-      <PlayerControls 
-        playerState={playerState}
-        currentTime={currentTime}
-        volume={volume}
-        onStateChange={fetchPlayerState}
-        guildId={guildId}
-      />
+      {guildId && (
+        <PlayerControls 
+          playerState={playerState}
+          currentTime={currentTime}
+          volume={volume}
+          onStateChange={fetchPlayerState}
+          guildId={guildId}
+        />
+      )}
       <Toaster 
         position="top-center"
         richColors
