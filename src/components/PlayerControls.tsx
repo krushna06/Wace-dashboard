@@ -1,6 +1,6 @@
 'use client'
 
-import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX, Filter, X } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX, Filter, X, ScrollText } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { musicApi, type PlayerState } from '@/services/api';
 import { toast } from 'sonner';
@@ -282,7 +282,6 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   return (
     <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
       <div className="flex items-center w-full h-full">
-        {/* Track Info Left */}
         <div className="flex items-center gap-4 w-64 min-w-0 justify-start">
           {playerState?.current ? (
             <>
@@ -312,7 +311,6 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
           )}
         </div>
 
-        {/* Playback Controls Center */}
         <div className="flex flex-col items-center gap-2 flex-1 justify-center">
           <div className="flex items-center gap-4 justify-center">
             <Shuffle 
@@ -337,20 +335,52 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
               onClick={handleLoop}
               className={`w-5 h-5 cursor-pointer transition-colors ${loopColor}`}
             />
-            <div className="relative" ref={filterDropdownRef}>
-              <button
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="p-1 transition-colors"
-                title={`Audio Filters${currentFilter ? ` - ${currentFilter.filter}${currentFilter.amount ? ` (${currentFilter.amount})` : ''}` : ''}`}
-              >
-                <Filter 
-                  className={`w-5 h-5 ${
+          </div>
+          <div className="w-full flex items-center gap-2 justify-center">
+            <span className="text-xs text-zinc-400">
+              {formatTime(currentTime)}
+            </span>
+            <div 
+              className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer max-w-md"
+              onClick={handleSeek}
+            >
+              <div
+                className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                style={{ 
+                  width: playerState?.current 
+                    ? `${(currentTime / playerState.current.length) * 100}%` 
+                    : '0%' 
+                }}
+              />
+            </div>
+            <span className="text-xs text-zinc-400">
+              {playerState?.current ? formatTime(playerState.current.length) : '0:00'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1 w-64 justify-end h-full -mt-2">
+          <button
+            className="p-2 transition-colors flex items-center justify-center h-10 w-10 text-zinc-400 hover:text-white"
+            title="Lyrics (coming soon)"
+            type="button"
+          >
+            <ScrollText className="w-5 h-5" />
+          </button>
+          <div className="relative flex items-center h-10" ref={filterDropdownRef}>
+            <button
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+              className="p-2 transition-colors"
+              title={`Audio Filters${currentFilter ? ` - ${currentFilter.filter}${currentFilter.amount ? ` (${currentFilter.amount})` : ''}` : ''}`}
+            >
+              <Filter 
+                className={`w-5 h-5 ${
                     currentFilter ? 'text-green-400' : 'text-zinc-400'
                   } hover:text-white`}
-                />
-              </button>
-              {showFilterDropdown && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
+              />
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
                   <div className="p-2">
                     <div className="text-xs text-zinc-400 mb-2 px-2">Audio Filters</div>
                     {currentFilter && (
@@ -442,60 +472,36 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                 </div>
               )}
             </div>
-          </div>
-          <div className="w-full flex items-center gap-2 justify-center">
-            <span className="text-xs text-zinc-400">
-              {formatTime(currentTime)}
-            </span>
-            <div 
-              className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer max-w-md"
-              onClick={handleSeek}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleMute}
+              className="p-2 hover:bg-zinc-800 rounded-full transition-colors flex items-center justify-center h-10 w-10"
             >
-              <div
-                className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                style={{ 
-                  width: playerState?.current 
-                    ? `${(currentTime / playerState.current.length) * 100}%` 
-                    : '0%' 
-                }}
-              />
-            </div>
-            <span className="text-xs text-zinc-400">
-              {playerState?.current ? formatTime(playerState.current.length) : '0:00'}
-            </span>
-          </div>
-        </div>
-
-        {/* Volume Controls Right */}
-        <div className="flex items-center gap-4 w-64 justify-end">
-          <button
-            onClick={handleMute}
-            className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
-          >
-            {isMuted ? (
-              <VolumeX className="w-5 h-5" />
-            ) : (
-              <Volume2 className="w-5 h-5" />
-            )}
-          </button>
-          <div className="w-24">
-            <div className="relative h-1 bg-zinc-800 rounded-full">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={localVolume}
-                onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
-                onMouseDown={() => setIsDragging(true)}
-                onMouseUp={handleVolumeDragEnd}
-                onTouchStart={() => setIsDragging(true)}
-                onTouchEnd={handleVolumeDragEnd}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-              />
-              <div 
-                className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                style={{ width: `${localVolume}%` }}
-              />
+              {isMuted ? (
+                <VolumeX className="w-5 h-5" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
+            </button>
+            <div className="w-24">
+              <div className="relative h-1 bg-zinc-800 rounded-full">
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={localVolume}
+                  onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+                  onMouseDown={() => setIsDragging(true)}
+                  onMouseUp={handleVolumeDragEnd}
+                  onTouchStart={() => setIsDragging(true)}
+                  onTouchEnd={handleVolumeDragEnd}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div 
+                  className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                  style={{ width: `${localVolume}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
