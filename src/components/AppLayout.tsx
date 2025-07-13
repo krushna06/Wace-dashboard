@@ -86,44 +86,44 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
   }, [playerState?.pause, playerState?.current]);
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
-      <div className="flex-1 flex overflow-hidden">
-        <Sidebar 
-          playlists={playlists} 
-          guildId={guildId} 
-          onOpenSpotlight={onOpenSpotlight}
-          isCollapsed={isSidebarCollapsed}
-          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between p-4 border-b border-zinc-900">
-            <div className="flex-1"></div>
-            <SearchBar
-              pathname={pathname}
-              guildSearchQuery={guildSearchQuery}
-              setGuildSearchQuery={setGuildSearchQuery}
-              guildSearchInputRef={guildSearchInputRef}
-              onOpenSpotlight={onOpenSpotlight}
-            />
-            <div className="flex-1 flex justify-end">
-              <UserProfile />
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-6">
-            {children}
+    <div className="h-screen bg-black text-white flex">
+      <Sidebar 
+        playlists={playlists} 
+        guildId={guildId} 
+        onOpenSpotlight={onOpenSpotlight}
+        isCollapsed={isSidebarCollapsed}
+        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+      <div className="flex-1 flex flex-col overflow-hidden relative">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-900">
+          <div className="flex-1"></div>
+          <SearchBar
+            pathname={pathname}
+            guildSearchQuery={guildSearchQuery}
+            setGuildSearchQuery={setGuildSearchQuery}
+            guildSearchInputRef={guildSearchInputRef}
+            onOpenSpotlight={onOpenSpotlight}
+          />
+          <div className="flex-1 flex justify-end">
+            <UserProfile />
           </div>
         </div>
-        <NowPlaying playerState={playerState} guildId={guildId || ''} />
+        <div className="flex-1 overflow-y-auto p-6 pb-32">
+          {children}
+        </div>
+        {guildId && (
+          <div className="absolute left-0 right-0 bottom-0 z-10">
+            <PlayerControls 
+              playerState={playerState}
+              currentTime={currentTime}
+              volume={volume}
+              onStateChange={fetchPlayerState}
+              guildId={guildId}
+            />
+          </div>
+        )}
       </div>
-      {guildId && (
-        <PlayerControls 
-          playerState={playerState}
-          currentTime={currentTime}
-          volume={volume}
-          onStateChange={fetchPlayerState}
-          guildId={guildId}
-        />
-      )}
+      <NowPlaying playerState={playerState} guildId={guildId || ''} />
       <Toaster 
         position="top-center"
         richColors
