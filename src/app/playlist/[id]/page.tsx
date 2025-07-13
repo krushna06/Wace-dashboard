@@ -5,9 +5,11 @@ import { musicApi, type Playlist, type Track } from '@/services/api';
 import { AppLayout } from '@/components/AppLayout';
 import { Play, ListMusic } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 
 export default function PlaylistPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
+  const { openSpotlight } = useSpotlightSearch();
   const [playlist, setPlaylist] = useState<Playlist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,30 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
     
     try {
       await musicApi.addTrack(params.id, track.uri);
+      
+      if (typeof window !== 'undefined') {
+        try {
+          const RECENTLY_PLAYED_KEY = 'wace_recently_played';
+          const MAX_RECENTLY_PLAYED = 50;
+          
+          const stored = localStorage.getItem(RECENTLY_PLAYED_KEY);
+          const recentlyPlayed = stored ? JSON.parse(stored) : [];
+          
+          const filtered = recentlyPlayed.filter((t: any) => t.uri !== track.uri);
+          
+          const newTrack = {
+            ...track,
+            playedAt: Date.now()
+          };
+          
+          const updated = [newTrack, ...filtered].slice(0, MAX_RECENTLY_PLAYED);
+          localStorage.setItem(RECENTLY_PLAYED_KEY, JSON.stringify(updated));
+          
+          window.dispatchEvent(new CustomEvent('trackPlayed', { detail: track }));
+        } catch (cacheError) {
+          console.error('Failed to cache track:', cacheError);
+        }
+      }
     } catch (error) {
       console.error('Failed to play track:', error);
     }
@@ -43,7 +69,7 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <AppLayout guildId={params.id} requesterId={session?.user?.id || ''}>
+      <AppLayout guildId={params.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
         </div>
@@ -53,7 +79,7 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
 
   if (error) {
     return (
-      <AppLayout guildId={params.id} requesterId={session?.user?.id || ''}>
+      <AppLayout guildId={params.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
           <div className="text-red-500">{error}</div>
         </div>
@@ -62,7 +88,7 @@ export default function PlaylistPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <AppLayout guildId={params.id} requesterId={session?.user?.id || ''}>
+    <AppLayout guildId={params.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
       <div className="flex items-center gap-6 mb-8">
         <div className="w-48 h-48 bg-zinc-800 rounded-lg flex items-center justify-center">
           <ListMusic className="w-16 h-16 text-zinc-600" />

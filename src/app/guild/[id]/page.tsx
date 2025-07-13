@@ -7,13 +7,17 @@ import { AppLayout } from '@/components/AppLayout';
 import { SpotlightSearch } from '@/components/SpotlightSearch';
 import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 import { musicApi, type Track, checkIfUserIsDJ } from '@/services/api';
-import { Play } from 'lucide-react';
+import { Play, Music } from 'lucide-react';
 import axios from 'axios';
 
 interface Guild {
   id: string;
   name: string;
   icon: string | null;
+}
+
+interface RecentlyPlayedTrack extends Track {
+  playedAt: number;
 }
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -41,12 +45,76 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
   throw new Error('Max retries reached');
 }
 
+const RECENTLY_PLAYED_KEY = 'wace_recently_played';
+const MAX_RECENTLY_PLAYED = 50;
+
+const getRecentlyPlayed = (): RecentlyPlayedTrack[] => {
+  if (typeof window === 'undefined') return [];
+  
+  try {
+    const stored = localStorage.getItem(RECENTLY_PLAYED_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Failed to load recently played songs:', error);
+    return [];
+  }
+};
+
+const addRecentlyPlayed = (track: Track): void => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    console.log('Adding track to recently played:', track.title);
+    const recentlyPlayed = getRecentlyPlayed();
+    
+    const filtered = recentlyPlayed.filter(t => t.uri !== track.uri);
+    
+    const newTrack: RecentlyPlayedTrack = {
+      ...track,
+      playedAt: Date.now()
+    };
+    
+    const updated = [newTrack, ...filtered].slice(0, MAX_RECENTLY_PLAYED);
+    localStorage.setItem(RECENTLY_PLAYED_KEY, JSON.stringify(updated));
+    console.log('Successfully cached track. Total cached tracks:', updated.length);
+  } catch (error) {
+    console.error('Failed to save recently played song:', error);
+  }
+};
+
+const notifyTrackPlayed = (track: Track) => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('trackPlayed', { detail: track }));
+  }
+};
+
+const originalPlayTrack = musicApi.playTrack;
+musicApi.playTrack = async (guildId: string, userId: string, search: string): Promise<void> => {
+  try {
+    await originalPlayTrack(guildId, userId, search);
+    
+    try {
+      const searchResults = await musicApi.search(search, 'youtube');
+      if (searchResults.length > 0) {
+        const track = searchResults[0];
+        addRecentlyPlayed(track);
+        notifyTrackPlayed(track);
+      }
+    } catch (searchError) {
+      console.error('Failed to cache track info:', searchError);
+    }
+  } catch (error) {
+    console.error('Failed to play track:', error);
+    throw error;
+  }
+};
+
 export default function GuildPage({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { isOpen, closeSpotlight, openSpotlight } = useSpotlightSearch();
   const [guild, setGuild] = useState<Guild | null>(null);
-  const [queue, setQueue] = useState<Track[]>([]);
+  const [recentlyPlayed, setRecentlyPlayed] = useState<RecentlyPlayedTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [djChecked, setDjChecked] = useState(false);
@@ -121,19 +189,65 @@ export default function GuildPage({ params }: { params: { id: string } }) {
         setIsLoading(false);
       }
     };
-    const fetchQueue = async () => {
-      try {
-        const queueData = await musicApi.getQueue(params.id);
-        setQueue(queueData);
-      } catch (error) {
-        // ignore
-      }
-    };
+
     fetchGuildData();
-    fetchQueue();
-    const interval = setInterval(fetchQueue, 5000);
-    return () => clearInterval(interval);
   }, [djChecked, isDJ, session?.accessToken, params.id]);
+
+  useEffect(() => {
+    setRecentlyPlayed(getRecentlyPlayed());
+  }, []);
+
+  useEffect(() => {
+    const handleTrackPlayed = (event: CustomEvent) => {
+      setRecentlyPlayed(getRecentlyPlayed());
+    };
+
+    const handleStorageChange = () => {
+      setRecentlyPlayed(getRecentlyPlayed());
+    };
+
+    window.addEventListener('trackPlayed', handleTrackPlayed as EventListener);
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('trackPlayed', handleTrackPlayed as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const handlePlayTrack = async (track: RecentlyPlayedTrack) => {
+    if (!session?.user?.id) {
+      console.error('User ID is missing. Cannot play track.');
+      return;
+    }
+    try {
+      await musicApi.playTrack(params.id, session.user.id, track.title);
+    } catch (error) {
+      console.error('Failed to play track:', error);
+    }
+  };
+
+  const formatPlayedAt = (timestamp: number): string => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+
+  const refreshRecentlyPlayed = () => {
+    setRecentlyPlayed(getRecentlyPlayed());
+  };
+
+  const debugRecentlyPlayed = () => {
+    console.log('Recently played from localStorage:', getRecentlyPlayed());
+    console.log('Current state:', recentlyPlayed);
+  };
 
   if (status === 'loading' || isLoading || !djChecked) {
     return (
@@ -172,43 +286,68 @@ export default function GuildPage({ params }: { params: { id: string } }) {
         onClose={closeSpotlight} 
       />
       <AppLayout guildId={guild.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
-        <div className="flex-1 flex flex-col h-full">
-        <div className="flex-1 p-8 overflow-hidden">
-          <div className="max-w-4xl mx-auto h-full">
-            <div className="h-full flex flex-col">
-              <h2 className="text-2xl font-bold mb-4">Upcoming Songs</h2>
-              {isLoading ? (
-                <div className="flex items-center justify-center min-h-[200px]">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-                </div>
-              ) : queue.length > 0 ? (
-                <div className="flex-1 overflow-y-auto scrollbar-custom pr-2">
-                  <div className="space-y-2">
-                    {queue.map((track, index) => (
-                      <div key={`${track.uri}-${index}`} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg hover:bg-zinc-800/50 transition-colors group">
-                        <div className="w-12 h-12 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
-                          <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-white truncate">{track.title}</h3>
-                          <p className="text-zinc-400 text-sm truncate">{track.author}</p>
-                        </div>
-                        <div className="text-zinc-400 text-sm">
-                          #{index + 1}
+        <div className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 text-zinc-400">
+                <Music className="w-8 h-8" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Recently Played</h1>
+                <p className="text-zinc-400">Your music listening history</p>
+              </div>
+            </div>
+            {/* Recently Played Songs Grid */}
+            {recentlyPlayed.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+                {recentlyPlayed.map((track) => (
+                  <div 
+                    key={`${track.uri}-${track.playedAt}`} 
+                    className="group bg-zinc-900/50 rounded-lg p-4 hover:bg-zinc-800/50 transition-all duration-300 cursor-pointer"
+                    onClick={() => handlePlayTrack(track)}
+                  >
+                    {/* Album Art */}
+                    <div className="relative mb-4">
+                      <img 
+                        src={track.thumbnail} 
+                        alt={track.title}
+                        className="w-full aspect-square object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          console.log('Image failed to load:', track.thumbnail);
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center';
+                        }}
+                      />
+                      {/* Play Button Overlay */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md flex items-center justify-center">
+                        <div className="bg-white text-black rounded-full p-3 group-hover:scale-110 transition-transform duration-300">
+                          <Play className="w-5 h-5 ml-0.5" />
                         </div>
                       </div>
-                    ))}
+                    </div>
+                    
+                    {/* Track Info */}
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-white truncate group-hover:text-green-400 transition-colors">
+                        {track.title}
+                      </h3>
+                      <p className="text-zinc-400 text-sm truncate">
+                        {track.author}
+                      </p>
+                      <p className="text-zinc-500 text-xs mt-1">
+                        {formatPlayedAt(track.playedAt)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center text-zinc-400 py-8">
-                  No upcoming songs in the queue
-                </div>
-              )}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-zinc-400 py-8">
+                No recently played songs. Start playing some music!
+              </div>
+            )}
           </div>
         </div>
-      </div>
       </AppLayout>
     </>
   );
