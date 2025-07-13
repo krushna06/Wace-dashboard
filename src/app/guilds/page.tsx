@@ -120,7 +120,7 @@ export default function GuildsPage() {
         isOpen={isOpen} 
         onClose={closeSpotlight} 
       />
-      <AppLayout guildId={undefined} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
+      <AppLayout guildId={listeningGuilds[0]?.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
         <div className="max-w-7xl mx-auto">
           {listeningGuilds.length > 0 && (
             <>
