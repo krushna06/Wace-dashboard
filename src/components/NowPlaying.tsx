@@ -6,9 +6,10 @@ import { musicApi } from '@/services/api';
 interface NowPlayingProps {
   playerState: PlayerState | null;
   guildId: string;
+  hideQueue?: boolean;
 }
 
-const NowPlaying = ({ playerState, guildId }: NowPlayingProps) => {
+const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
   const [queue, setQueue] = useState<Track[]>([]);
   const [clearing, setClearing] = useState(false);
 
@@ -68,46 +69,48 @@ const NowPlaying = ({ playerState, guildId }: NowPlayingProps) => {
       ) : (
         <div className="text-zinc-500 text-center">No track currently playing</div>
       )}
-      <div className="flex-1 overflow-y-auto mt-2 pr-2">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-zinc-400 text-xs font-semibold">Queue</h3>
-          {queue.length > 0 && (
-            <button
-              className="px-2 py-1 rounded text-xs bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors disabled:opacity-50 ml-2"
-              onClick={handleClearQueue}
-              disabled={clearing}
-              title="Clear Queue"
-              style={{ lineHeight: 1 }}
-            >
-              Clear Queue
-            </button>
+      {!hideQueue && (
+        <div className="flex-1 overflow-y-auto mt-2 pr-2">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-zinc-400 text-xs font-semibold">Queue</h3>
+            {queue.length > 0 && (
+              <button
+                className="px-2 py-1 rounded text-xs bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors disabled:opacity-50 ml-2"
+                onClick={handleClearQueue}
+                disabled={clearing}
+                title="Clear Queue"
+                style={{ lineHeight: 1 }}
+              >
+                Clear Queue
+              </button>
+            )}
+          </div>
+          {queue.length === 0 ? (
+            <div className="text-zinc-500 text-xs text-center">Queue is empty</div>
+          ) : (
+            <ul className="space-y-2">
+              {queue.slice(1).map((track, idx) => (
+                <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded-lg group">
+                  <div className="w-8 h-8 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
+                    <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-white text-xs truncate">{track.title}</h4>
+                    <p className="text-zinc-400 text-[11px] truncate">{track.author}</p>
+                  </div>
+                  <button
+                    className="ml-2 p-1 rounded text-xs bg-zinc-800 text-zinc-400 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 transition-all duration-150"
+                    title="Remove from queue"
+                    onClick={() => handleRemoveFromQueue(idx + 1)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
-        {queue.length === 0 ? (
-          <div className="text-zinc-500 text-xs text-center">Queue is empty</div>
-        ) : (
-          <ul className="space-y-2">
-            {queue.slice(1).map((track, idx) => (
-              <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded-lg group">
-                <div className="w-8 h-8 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
-                  <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-white text-xs truncate">{track.title}</h4>
-                  <p className="text-zinc-400 text-[11px] truncate">{track.author}</p>
-                </div>
-                <button
-                  className="ml-2 p-1 rounded text-xs bg-zinc-800 text-zinc-400 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 transition-all duration-150"
-                  title="Remove from queue"
-                  onClick={() => handleRemoveFromQueue(idx + 1)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      )}
     </div>
   );
 };

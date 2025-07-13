@@ -27,9 +27,11 @@ interface AppLayoutProps {
   guildId?: string;
   requesterId: string;
   onOpenSpotlight: () => void;
+  hidePlayerControls?: boolean;
+  hideQueue?: boolean;
 }
 
-export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: AppLayoutProps) {
+export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hidePlayerControls, hideQueue }: AppLayoutProps) {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(100);
@@ -111,7 +113,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
         <div className="flex-1 overflow-y-auto p-6 pb-32">
           {children}
         </div>
-        {guildId && (
+        {guildId && !hidePlayerControls && (
           <div className="absolute left-0 right-0 bottom-0 z-10">
             <PlayerControls 
               playerState={playerState}
@@ -123,7 +125,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
           </div>
         )}
       </div>
-      <NowPlaying playerState={playerState} guildId={guildId || ''} />
+      <NowPlaying playerState={playerState} guildId={guildId || ''} hideQueue={hideQueue} />
       <Toaster 
         position="top-center"
         richColors
