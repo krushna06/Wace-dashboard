@@ -3,11 +3,21 @@
 import { useEffect, useState } from 'react';
 import { musicApi, type PlayerState, type Playlist } from '@/services/api';
 import { PlayerControls } from '@/components/PlayerControls';
-import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { UserProfile } from '@/components/UserProfile';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { checkIfUserIsDJ } from '@/services/api';
+
+interface Guild {
+  id: string;
+  name: string;
+  icon: string | null;
+  owner: boolean;
+  permissions: string;
+}
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -23,15 +33,154 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   isCollapsed: boolean;
   onToggle: () => void;
 }) {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [guilds, setGuilds] = useState<Guild[]>([]);
+  const [currentGuild, setCurrentGuild] = useState<Guild | null>(null);
+  const [showGuildDropdown, setShowGuildDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGuilds = async () => {
+      if (!session?.accessToken) return;
+
+      try {
+        const response = await fetch('https://discord.com/api/users/@me/guilds', {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch guilds');
+
+        const data = await response.json();
+        setGuilds(data);
+        
+        const current = data.find((guild: Guild) => guild.id === guildId);
+        setCurrentGuild(current);
+      } catch (error) {
+        console.error('Failed to fetch guilds:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGuilds();
+  }, [session?.accessToken, guildId]);
+
+  useEffect(() => {
+    if (guilds.length > 0) {
+      const current = guilds.find((guild: Guild) => guild.id === guildId);
+      setCurrentGuild(current || null);
+    }
+  }, [guildId, guilds]);
+
+  const handleGuildSelect = async (selectedGuild: Guild) => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+    
+    try {
+      const isDJ = await checkIfUserIsDJ(selectedGuild.id, userId);
+      if (!isDJ) {
+        toast.error('You are not a DJ in this server');
+        return;
+      }
+      router.push(`/guild/${selectedGuild.id}`);
+      setShowGuildDropdown(false);
+    } catch (error) {
+      console.error('Failed to switch guild:', error);
+      toast.error('Failed to switch server');
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.guild-selector')) {
+        setShowGuildDropdown(false);
+      }
+    };
+
+    if (showGuildDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showGuildDropdown]);
+
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-6 transition-all duration-300 relative`}>
       {/* Toggle Button */}
       <button
         onClick={onToggle}
-        className={`absolute top-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-1.5 rounded-full transition-colors border border-zinc-700 ${isCollapsed ? '-right-4' : '-right-3'}`}
+        className={`absolute top-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-1.5 rounded-full transition-colors border border-zinc-700 ${isCollapsed ? '-right-6' : '-right-5'}`}
       >
         {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
+
+      {/* Guild Selector */}
+      {!isCollapsed && (
+        <div className="relative guild-selector">
+          <button
+            onClick={() => setShowGuildDropdown(!showGuildDropdown)}
+            className="w-full flex items-center justify-between p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors text-left"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              {currentGuild?.icon ? (
+                <img
+                  src={`https://cdn.discordapp.com/icons/${currentGuild.id}/${currentGuild.icon}.png`}
+                  alt={currentGuild.name}
+                  className="w-5 h-5 rounded-full flex-shrink-0"
+                />
+              ) : (
+                <div className="w-5 h-5 rounded-full bg-zinc-600 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold">{currentGuild?.name?.charAt(0) || '?'}</span>
+                </div>
+              )}
+              <span className="truncate text-sm font-medium">
+                {currentGuild?.name || 'Loading...'}
+              </span>
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${showGuildDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {showGuildDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+              {loading ? (
+                <div className="p-2 text-center text-zinc-400 text-sm">Loading servers...</div>
+              ) : (
+                <div className="py-1">
+                  {guilds.map((guild) => (
+                    <button
+                      key={guild.id}
+                      onClick={() => handleGuildSelect(guild)}
+                      className={`w-full flex items-center gap-2 p-2 hover:bg-zinc-700 transition-colors text-left ${
+                        guild.id === guildId ? 'bg-zinc-700' : ''
+                      }`}
+                    >
+                      {guild.icon ? (
+                        <img
+                          src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                          alt={guild.name}
+                          className="w-5 h-5 rounded-full flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-zinc-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold">{guild.name.charAt(0)}</span>
+                        </div>
+                      )}
+                      <span className="truncate text-sm">{guild.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} text-zinc-400 hover:text-white transition-colors`}>
         <div className="w-6 h-6 flex-shrink-0">
           <Home className="w-6 h-6" />

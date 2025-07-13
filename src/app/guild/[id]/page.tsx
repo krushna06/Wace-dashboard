@@ -189,8 +189,6 @@ export default function GuildPage({ params }: { params: { id: string } }) {
               )}
               <div>
                 <h1 className="text-3xl font-bold">{guild.name}</h1>
-                <p className="text-zinc-400">Music Player</p>
-                <p className="text-zinc-500 text-sm">Press Ctrl+K to search</p>
               </div>
             </div>
           </div>
