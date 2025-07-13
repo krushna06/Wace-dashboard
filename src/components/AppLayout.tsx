@@ -86,8 +86,9 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
         toast.error('You are not a DJ in this server');
         return;
       }
-      router.push(`/guild/${selectedGuild.id}`);
+      setCurrentGuild(selectedGuild);
       setShowGuildDropdown(false);
+      router.push(`/guild/${selectedGuild.id}`);
     } catch (error) {
       console.error('Failed to switch guild:', error);
       toast.error('Failed to switch server');
