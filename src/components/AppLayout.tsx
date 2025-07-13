@@ -5,7 +5,7 @@ import { musicApi, type PlayerState, type Playlist } from '@/services/api';
 import { PlayerControls } from '@/components/PlayerControls';
 import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 import { UserProfile } from '@/components/UserProfile';
 import { Toaster, toast } from 'sonner';
 import { useSession } from 'next-auth/react';
@@ -35,6 +35,7 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
 }) {
   const { data: session } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [currentGuild, setCurrentGuild] = useState<Guild | null>(null);
   const [showGuildDropdown, setShowGuildDropdown] = useState(false);
@@ -111,7 +112,7 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   }, [showGuildDropdown]);
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-6 transition-all duration-300 relative`}>
+    <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-3 transition-all duration-300 relative`}>
       {/* Toggle Button */}
       <button
         onClick={onToggle}
@@ -181,7 +182,11 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
         </div>
       )}
 
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} text-zinc-400 hover:text-white transition-colors`}>
+      {!isCollapsed && <hr className="border-zinc-800" />}
+
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+        pathname === `/guild/${guildId}` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+      }`}>
         <div className="w-6 h-6 flex-shrink-0">
           <Home className="w-6 h-6" />
         </div>
@@ -191,7 +196,9 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} text-zinc-400 hover:text-white transition-colors`}>
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+        pathname === '/guilds' ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+      }`}>
         <div className="w-6 h-6 flex-shrink-0">
           <Server className="w-6 h-6" />
         </div>
@@ -201,7 +208,9 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} text-zinc-400 hover:text-white transition-colors`}>
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+        pathname === `/guild/${guildId}/explore` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+      }`}>
         <div className="w-6 h-6 flex-shrink-0">
           <Compass className="w-6 h-6" />
         </div>
@@ -211,7 +220,9 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
-      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} text-zinc-400 hover:text-white transition-colors`}>
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+        pathname === `/guild/${guildId}/search` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+      }`}>
         <div className="w-6 h-6 flex-shrink-0">
           <Search className="w-6 h-6" />
         </div>
@@ -225,8 +236,14 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
         )}
       </div>
       
+      {!isCollapsed && <hr className="border-zinc-800" />}
+      
       {!isCollapsed && (
-        <div className="mt-6">
+        <div className="mt-1">
+          <button className="w-full bg-zinc-800 text-white px-3 py-2 rounded-2xl hover:bg-zinc-700 transition-colors text-sm font-medium mb-4 flex items-center gap-2">
+            <ListMusic className="w-4 h-4" />
+            Create Playlist
+          </button>
           <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Your Playlists</h2>
           <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
             {playlists.map((playlist) => (
