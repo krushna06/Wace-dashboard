@@ -63,7 +63,7 @@ export default function ExplorePage({ params }: { params: { id: string } }) {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="flex items-center gap-3 mb-8">
-              <TrendingUp className="w-8 h-8 text-green-400" />
+              <TrendingUp className="w-8 h-8 text-white" />
               <div>
                 <h1 className="text-3xl font-bold">Explore</h1>
                 <p className="text-zinc-400">Discover trending music from around the world</p>
