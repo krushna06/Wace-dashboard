@@ -281,9 +281,9 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
   return (
     <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
-      <div className="flex items-center justify-between max-w-screen-xl mx-auto">
-        {/* Currently Playing */}
-        <div className="flex items-center gap-4 w-64">
+      <div className="flex items-center w-full h-full">
+        {/* Track Info Left */}
+        <div className="flex items-center gap-4 w-64 min-w-0 justify-start">
           {playerState?.current ? (
             <>
               <img
@@ -297,15 +297,24 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
               </div>
             </>
           ) : (
-            <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
-              <span className="text-zinc-500 text-xs">No track</span>
-            </div>
+            <>
+              <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
+                <span className="text-zinc-500 text-xs">No track</span>
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-semibold truncate max-w-[200px] flex items-center">
+                  {playerState?.current?.title ?? 'Nothing is being played'}
+                  <span className="ml-1">...</span>
+                </h3>
+                <p className="text-zinc-400 text-sm truncate max-w-[200px]">{playerState?.current?.author ?? ''}</p>
+              </div>
+            </>
           )}
         </div>
 
-        {/* Playback Controls */}
-        <div className="flex flex-col items-center gap-2 flex-1 max-w-md">
-          <div className="flex items-center gap-4">
+        {/* Playback Controls Center */}
+        <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+          <div className="flex items-center gap-4 justify-center">
             <Shuffle 
               onClick={handleShuffle}
               className={`w-5 h-5 ${localShuffle ? 'text-green-400' : 'text-zinc-400'} hover:text-white cursor-pointer transition-colors`}
@@ -434,12 +443,12 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
               )}
             </div>
           </div>
-          <div className="w-full flex items-center gap-2">
+          <div className="w-full flex items-center gap-2 justify-center">
             <span className="text-xs text-zinc-400">
               {formatTime(currentTime)}
             </span>
             <div 
-              className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer"
+              className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer max-w-md"
               onClick={handleSeek}
             >
               <div
@@ -457,8 +466,8 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
           </div>
         </div>
 
-        {/* Volume Controls */}
-        <div className="flex items-center gap-4">
+        {/* Volume Controls Right */}
+        <div className="flex items-center gap-4 w-64 justify-end">
           <button
             onClick={handleMute}
             className="p-2 hover:bg-zinc-800 rounded-full transition-colors"

@@ -101,7 +101,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   }, [showGuildDropdown]);
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-3 transition-all duration-300 relative`}>
+    <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-3 transition-all duration-300 relative pb-32`}>
       {/* Toggle Button */}
       <button
         onClick={onToggle}
