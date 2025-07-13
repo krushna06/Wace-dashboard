@@ -8,6 +8,13 @@ import { SpotlightSearch } from "@/components/SpotlightSearch";
 import { useSpotlightSearch } from "@/hooks/useSpotlightSearch";
 import { Play, ListMusic } from "lucide-react";
 
+function formatDuration(ms: number) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
 export default function PlaylistPage({ params }: { params: { id: string; playlistId: string } }) {
   const { data: session } = useSession();
   const { isOpen, closeSpotlight, openSpotlight } = useSpotlightSearch();
@@ -134,6 +141,7 @@ export default function PlaylistPage({ params }: { params: { id: string; playlis
                   <h3 className="font-semibold text-white truncate">{track.title}</h3>
                   <p className="text-zinc-400 text-sm truncate">{track.author}</p>
                 </div>
+                <span className="text-zinc-400 text-xs w-12 text-right tabular-nums">{formatDuration(track.length)}</span>
                 <button 
                   onClick={() => handlePlayTrack(track)}
                   className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black rounded-full p-2"
