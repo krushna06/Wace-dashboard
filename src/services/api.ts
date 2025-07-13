@@ -339,6 +339,15 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async removeFromQueue(guildId: string, position: number): Promise<void> {
+    try {
+      await api.delete(`/v1/queue/${guildId}/${position}`);
+    } catch (error) {
+      console.error('Error removing track from queue:', error);
+      throw error;
+    }
+  },
 };
 
 export interface TrendingTrack {

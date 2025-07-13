@@ -37,6 +37,14 @@ const NowPlaying = ({ playerState, guildId }: NowPlayingProps) => {
     }
   };
 
+  const handleRemoveFromQueue = async (position: number) => {
+    try {
+      await musicApi.removeFromQueue(guildId, position);
+      setQueue((prev) => prev.filter((_, idx) => idx !== position));
+    } catch (error) {
+    }
+  };
+
   return (
     <div className="w-80 bg-[#121212] p-6 flex flex-col gap-6">
       <h2 className="text-zinc-500 uppercase text-sm font-bold mb-2">Now Playing</h2>
@@ -79,8 +87,8 @@ const NowPlaying = ({ playerState, guildId }: NowPlayingProps) => {
           <div className="text-zinc-500 text-xs text-center">Queue is empty</div>
         ) : (
           <ul className="space-y-2">
-            {queue.map((track, idx) => (
-              <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded-lg">
+            {queue.slice(1).map((track, idx) => (
+              <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded-lg group">
                 <div className="w-8 h-8 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
                   <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
                 </div>
@@ -88,6 +96,13 @@ const NowPlaying = ({ playerState, guildId }: NowPlayingProps) => {
                   <h4 className="text-white text-xs truncate">{track.title}</h4>
                   <p className="text-zinc-400 text-[11px] truncate">{track.author}</p>
                 </div>
+                <button
+                  className="ml-2 p-1 rounded text-xs bg-zinc-800 text-zinc-400 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 transition-all duration-150"
+                  title="Remove from queue"
+                  onClick={() => handleRemoveFromQueue(idx + 1)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </li>
             ))}
           </ul>
