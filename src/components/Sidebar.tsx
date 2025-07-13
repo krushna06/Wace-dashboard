@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { checkIfUserIsDJ } from '@/services/api';
-import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Guild {
@@ -252,9 +252,17 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
       )}
       {!isCollapsed && guildId && (
         <div className="mt-auto">
-          <Link href={`/guild/${guildId}/settings`} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 text-white hover:bg-zinc-700 transition-colors text-sm font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /></svg>
-            Settings
+          <Link
+            href={`/guild/${guildId}/settings`}
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg transition-all duration-200 text-sm font-medium select-none bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm
+              ${pathname === `/guild/${guildId}/settings` ? 'text-white' : 'text-zinc-300'}
+            `}
+            style={{ background: 'none' }}
+          >
+            <div className="w-6 h-6 flex-shrink-0 flex items-center justify-center">
+              <Settings className="w-6 h-6" />
+            </div>
+            {!isCollapsed && <span>Settings</span>}
           </Link>
         </div>
       )}

@@ -330,6 +330,15 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async clearQueue(guildId: string): Promise<void> {
+    try {
+      await api.delete(`/v1/queue/${guildId}`);
+    } catch (error) {
+      console.error('Error clearing queue:', error);
+      throw error;
+    }
+  },
 };
 
 export interface TrendingTrack {

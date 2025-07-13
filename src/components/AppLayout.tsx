@@ -113,7 +113,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
             {children}
           </div>
         </div>
-        <NowPlaying playerState={playerState} />
+        <NowPlaying playerState={playerState} guildId={guildId || ''} />
       </div>
       {guildId && (
         <PlayerControls 
