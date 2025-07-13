@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { checkIfUserIsDJ } from '@/services/api';
-import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings } from 'lucide-react';
+import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
+import { musicApi } from '@/services/api';
 
 interface Guild {
   id: string;
@@ -20,6 +21,8 @@ interface Playlist {
   id: string;
   name: string;
   trackCount: number;
+  description?: string;
+  private?: boolean;
 }
 
 const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }: { 
@@ -36,6 +39,22 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   const [currentGuild, setCurrentGuild] = useState<Guild | null>(null);
   const [showGuildDropdown, setShowGuildDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editPrivate, setEditPrivate] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createDescription, setCreateDescription] = useState('');
+  const [createPrivate, setCreatePrivate] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [isClosingCreate, setIsClosingCreate] = useState(false);
+  const [isClosingEdit, setIsClosingEdit] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [isClosingConfirmDelete, setIsClosingConfirmDelete] = useState(false);
 
   useEffect(() => {
     const fetchGuilds = async () => {
@@ -99,6 +118,112 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showGuildDropdown]);
+
+  const openConfirmDelete = (playlistId: string) => {
+    setConfirmDeleteId(playlistId);
+    setIsClosingConfirmDelete(false);
+  };
+
+  const closeConfirmDelete = () => {
+    setIsClosingConfirmDelete(true);
+    setTimeout(() => {
+      setConfirmDeleteId(null);
+      setIsClosingConfirmDelete(false);
+    }, 200);
+  };
+
+  const handleDeletePlaylist = async () => {
+    if (!session?.user?.id || !confirmDeleteId) return;
+    setDeletingId(confirmDeleteId);
+    try {
+      await musicApi.deletePlaylist(confirmDeleteId, session.user.id);
+      toast.success('Playlist deleted');
+      closeConfirmDelete();
+      router.refresh();
+    } catch (err) {
+      toast.error('Failed to delete playlist');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const openEditModal = (playlist: Playlist) => {
+    setEditingPlaylist(playlist);
+    setEditName(playlist.name);
+    setEditDescription(playlist.description || '');
+    setEditPrivate(playlist.private || false);
+    setIsClosingEdit(false);
+  };
+
+  const closeEditModal = () => {
+    setIsClosingEdit(true);
+    setTimeout(() => {
+      setEditingPlaylist(null);
+      setEditName('');
+      setEditDescription('');
+      setEditPrivate(false);
+      setEditLoading(false);
+      setIsClosingEdit(false);
+    }, 200);
+  };
+
+  const handleEditPlaylist = async () => {
+    if (!editingPlaylist || !session?.user?.id) return;
+    setEditLoading(true);
+    try {
+      await musicApi.editPlaylist(editingPlaylist.id, session.user.id, {
+        name: editName,
+        description: editDescription,
+        private: editPrivate,
+      });
+      toast.success('Playlist updated');
+      closeEditModal();
+      router.refresh();
+    } catch (err) {
+      toast.error('Failed to update playlist');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const openCreateModal = () => {
+    setCreateName('');
+    setCreateDescription('');
+    setCreatePrivate(false);
+    setShowCreateModal(true);
+    setIsClosingCreate(false);
+  };
+
+  const closeCreateModal = () => {
+    setIsClosingCreate(true);
+    setTimeout(() => {
+      setShowCreateModal(false);
+      setCreateName('');
+      setCreateDescription('');
+      setCreatePrivate(false);
+      setCreateLoading(false);
+      setIsClosingCreate(false);
+    }, 200);
+  };
+
+  const handleCreatePlaylist = async () => {
+    if (!session?.user?.id) return;
+    setCreateLoading(true);
+    try {
+      await musicApi.createPlaylist({
+        name: createName,
+        description: createDescription,
+        private: createPrivate,
+        owner: session.user.id,
+      });
+      toast.success('Playlist created');
+      closeCreateModal();
+      router.refresh();
+    } catch (err) {
+      toast.error('Failed to create playlist');
+      setCreateLoading(false);
+    }
+  };
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-3 transition-all duration-300 relative pb-32`}>
@@ -230,21 +355,38 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
       {!isCollapsed && <hr className="border-zinc-800" />}
       {!isCollapsed && (
         <div className="mt-1">
-          <button className="w-full bg-zinc-800 text-white px-3 py-2 rounded-2xl hover:bg-zinc-700 transition-colors text-sm font-medium mb-4 flex items-center gap-2">
+          <button className="w-full bg-zinc-800 text-white px-3 py-2 rounded-2xl hover:bg-zinc-700 transition-colors text-sm font-medium mb-4 flex items-center gap-2" onClick={openCreateModal}>
             <ListMusic className="w-4 h-4" />
             Create Playlist
           </button>
           <h2 className="text-zinc-500 uppercase text-sm font-bold mb-4">Your Playlists</h2>
           <ul className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-zinc-900 [&::-webkit-scrollbar-thumb]:bg-zinc-700 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-zinc-600">
             {playlists.map((playlist) => (
-              <li key={playlist.id} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate">
+              <li key={playlist.id} className="text-zinc-400 hover:text-white transition-colors cursor-pointer truncate group flex items-center justify-between">
                 {guildId && (
-                  <Link href={`/guild/${guildId}/playlist/${playlist.id}`} className="flex items-center gap-2">
+                  <Link href={`/guild/${guildId}/playlist/${playlist.id}`} className="flex items-center gap-2 flex-1 min-w-0">
                     <ListMusic className="w-4 h-4" />
-                    <span>{playlist.name}</span>
+                    <span className="truncate">{playlist.name}</span>
                     <span className="text-xs text-zinc-600">({playlist.trackCount})</span>
                   </Link>
                 )}
+                <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    className="p-1 hover:bg-zinc-700 rounded"
+                    title="Edit Playlist"
+                    onClick={() => openEditModal(playlist)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="p-1 hover:bg-zinc-700 rounded"
+                    title="Delete Playlist"
+                    onClick={() => openConfirmDelete(playlist.id)}
+                    disabled={deletingId === playlist.id}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -264,6 +406,106 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
             </div>
             {!isCollapsed && <span>Settings</span>}
           </Link>
+        </div>
+      )}
+      {/* Edit Playlist Modal */}
+      {editingPlaylist && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className={`bg-zinc-900 p-6 rounded-lg shadow-lg w-full max-w-md border border-zinc-700 ${isClosingEdit ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}` }>
+            <h2 className="text-xl font-bold mb-4 text-white">Edit Playlist</h2>
+            <input
+              className="w-full mb-3 p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none"
+              placeholder="Playlist Name"
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              disabled={editLoading}
+            />
+            <textarea
+              className="w-full mb-3 p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none"
+              placeholder="Description (optional)"
+              value={editDescription}
+              onChange={e => setEditDescription(e.target.value)}
+              disabled={editLoading}
+            />
+            <label className="flex items-center gap-2 mb-4 text-zinc-300">
+              <input
+                type="checkbox"
+                checked={editPrivate}
+                onChange={e => setEditPrivate(e.target.checked)}
+                disabled={editLoading}
+              />
+              Private
+            </label>
+            <div className="flex justify-end gap-2">
+              <button onClick={closeEditModal} className="px-4 py-2 rounded bg-zinc-700 text-white hover:bg-zinc-600" disabled={editLoading}>Cancel</button>
+              <button
+                onClick={handleEditPlaylist}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
+                disabled={!editName.trim() || editLoading}
+              >
+                {editLoading ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className={`bg-zinc-900 p-6 rounded-lg shadow-lg w-full max-w-md border border-zinc-700 ${isClosingCreate ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}` }>
+            <h2 className="text-xl font-bold mb-4 text-white">Create Playlist</h2>
+            <input
+              className="w-full mb-3 p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none"
+              placeholder="Playlist Name"
+              value={createName}
+              onChange={e => setCreateName(e.target.value)}
+              disabled={createLoading}
+            />
+            <textarea
+              className="w-full mb-3 p-2 rounded bg-zinc-800 text-white border border-zinc-700 focus:outline-none"
+              placeholder="Description (optional)"
+              value={createDescription}
+              onChange={e => setCreateDescription(e.target.value)}
+              disabled={createLoading}
+            />
+            <label className="flex items-center gap-2 mb-4 text-zinc-300">
+              <input
+                type="checkbox"
+                checked={createPrivate}
+                onChange={e => setCreatePrivate(e.target.checked)}
+                disabled={createLoading}
+              />
+              Private
+            </label>
+            <div className="flex justify-end gap-2">
+              <button onClick={closeCreateModal} className="px-4 py-2 rounded bg-zinc-700 text-white hover:bg-zinc-600" disabled={createLoading}>Cancel</button>
+              <button
+                onClick={handleCreatePlaylist}
+                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
+                disabled={!createName.trim() || createLoading}
+              >
+                {createLoading ? 'Creating...' : 'Create'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Confirm Delete Modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className={`bg-zinc-900 p-6 rounded-lg shadow-lg w-full max-w-md border border-zinc-700 ${isClosingConfirmDelete ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}` }>
+            <h2 className="text-xl font-bold mb-4 text-white">Delete Playlist</h2>
+            <p className="mb-6 text-zinc-300">Are you sure you want to delete this playlist? This action cannot be undone.</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={closeConfirmDelete} className="px-4 py-2 rounded bg-zinc-700 text-white hover:bg-zinc-600" disabled={deletingId === confirmDeleteId}>Cancel</button>
+              <button
+                onClick={handleDeletePlaylist}
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500 disabled:opacity-50"
+                disabled={deletingId === confirmDeleteId}
+              >
+                {deletingId === confirmDeleteId ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

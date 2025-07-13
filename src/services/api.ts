@@ -358,6 +358,58 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async deletePlaylist(playlistId: string, ownerId: string): Promise<void> {
+    try {
+      await api.delete(`/v1/playlist/${playlistId}`, {
+        headers: {
+          'x-owner': ownerId,
+        },
+      });
+    } catch (error) {
+      console.error('Error deleting playlist:', error);
+      throw error;
+    }
+  },
+
+  async editPlaylist(
+    playlistId: string,
+    ownerId: string,
+    data: { name?: string; description?: string; private?: boolean }
+  ): Promise<void> {
+    try {
+      await api.patch(
+        `/v1/playlist/${playlistId}`,
+        { owner: ownerId, ...data },
+        {
+          headers: {
+            'x-owner': ownerId,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    } catch (error) {
+      console.error('Error editing playlist:', error);
+      throw error;
+    }
+  },
+
+  async createPlaylist({ name, description, private: isPrivate, owner }: { name: string; description?: string; private?: boolean; owner: string }): Promise<void> {
+    try {
+      await api.post(
+        '/v1/playlist',
+        { name, description, private: isPrivate, owner },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    } catch (error) {
+      console.error('Error creating playlist:', error);
+      throw error;
+    }
+  },
 };
 
 export interface TrendingTrack {
