@@ -3,6 +3,7 @@
 import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX, Filter, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { musicApi, type PlayerState } from '@/services/api';
+import { toast } from 'sonner';
 
 interface PlayerControlsProps {
   playerState: PlayerState | null;
@@ -110,27 +111,34 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     if (!playerState) return;
     try {
       await musicApi.togglePlay(guildId);
+      const action = playerState.pause ? 'Resumed' : 'Paused';
+      toast.success(`${action} playback`);
       onStateChange();
     } catch (error) {
       console.error("Failed to toggle play state:", error);
+      toast.error("Failed to toggle playback");
     }
   };
 
   const handleSkip = async () => {
     try {
       await musicApi.skipTrack(guildId);
+      toast.success("Skipped to next track");
       onStateChange();
     } catch (error) {
       console.error("Failed to skip track:", error);
+      toast.error("Failed to skip track");
     }
   };
 
   const handlePrevious = async () => {
     try {
       await musicApi.previousTrack(guildId);
+      toast.success("Went to previous track");
       onStateChange();
     } catch (error) {
       console.error("Failed to go to previous track:", error);
+      toast.error("Failed to go to previous track");
     }
   };
 
@@ -140,11 +148,13 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       setShowVolumeNotification(true);
       if (!isDragging) {
         await musicApi.setVolume(guildId, newVolume);
+        toast.success(`Volume: ${Math.round(newVolume)}%`);
       }
       onStateChange();
       setTimeout(() => setShowVolumeNotification(false), 1000);
     } catch (error) {
       console.error("Failed to change volume:", error);
+      toast.error("Failed to change volume");
     }
   };
 
@@ -180,10 +190,12 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       setLocalShuffle(newShuffle);
       setShuffleNotificationText(`Shuffle: ${newShuffle ? 'Enabled' : 'Disabled'}`);
       setShowShuffleNotification(true);
+      toast.success(`Shuffle: ${newShuffle ? 'Enabled' : 'Disabled'}`);
       setTimeout(() => setShowShuffleNotification(false), 1000);
       onStateChange();
     } catch (error) {
       console.error("Failed to toggle shuffle:", error);
+      toast.error("Failed to toggle shuffle");
     }
   };
 
@@ -204,22 +216,31 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
     try {
       await musicApi.setLoop(guildId, uiToBackendLoop(nextMode));
+      toast.success(loopText);
       onStateChange();
     } catch (error) {
       console.error('Failed to set loop mode:', error);
+      toast.error("Failed to set loop mode");
     }
   };
 
-  const handleMute = () => {
-    if (isMuted) {
-      setLocalVolume(previousVolume);
-      musicApi.setVolume(guildId, previousVolume);
-    } else {
-      setPreviousVolume(localVolume);
-      setLocalVolume(0);
-      musicApi.setVolume(guildId, 0);
+  const handleMute = async () => {
+    try {
+      if (isMuted) {
+        setLocalVolume(previousVolume);
+        await musicApi.setVolume(guildId, previousVolume);
+        toast.success(`Unmuted (${Math.round(previousVolume)}%)`);
+      } else {
+        setPreviousVolume(localVolume);
+        setLocalVolume(0);
+        await musicApi.setVolume(guildId, 0);
+        toast.success("Muted");
+      }
+      setIsMuted(!isMuted);
+    } catch (error) {
+      console.error('Failed to toggle mute:', error);
+      toast.error("Failed to toggle mute");
     }
-    setIsMuted(!isMuted);
   };
 
   const handleApplyFilter = async (filter: string, amount?: number) => {
@@ -228,11 +249,13 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       setCurrentFilter({ filter, amount });
       setFilterNotificationText(`Filter applied: ${filter}${amount ? ` (${amount})` : ''}`);
       setShowFilterNotification(true);
+      toast.success(`Filter applied: ${filter}${amount ? ` (${amount})` : ''}`);
       setTimeout(() => setShowFilterNotification(false), 1000);
       setShowFilterDropdown(false);
       onStateChange();
     } catch (error) {
       console.error('Failed to apply filter:', error);
+      toast.error("Failed to apply filter");
     }
   };
 
@@ -242,11 +265,13 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       setCurrentFilter(null);
       setFilterNotificationText('All filters cleared');
       setShowFilterNotification(true);
+      toast.success("All filters cleared");
       setTimeout(() => setShowFilterNotification(false), 1000);
       setShowFilterDropdown(false);
       onStateChange();
     } catch (error) {
       console.error('Failed to clear filters:', error);
+      toast.error("Failed to clear filters");
     }
   };
 

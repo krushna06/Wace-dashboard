@@ -7,6 +7,7 @@ import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRig
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { UserProfile } from '@/components/UserProfile';
+import { Toaster } from 'sonner';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -214,6 +215,20 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
         volume={volume}
         onStateChange={fetchPlayerState}
         guildId={guildId}
+      />
+      <Toaster 
+        position="top-center"
+        richColors
+        closeButton
+        duration={3000}
+        offset="60px"
+        toastOptions={{
+          style: {
+            background: '#121212',
+            color: 'white',
+            border: '1px solid #333'
+          }
+        }}
       />
     </div>
   );
