@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
+import { SpotlightSearch } from '@/components/SpotlightSearch';
+import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 import { musicApi, type Track, checkIfUserIsDJ } from '@/services/api';
 import { Play } from 'lucide-react';
 import axios from 'axios';
@@ -42,6 +44,7 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 3)
 export default function GuildPage({ params }: { params: { id: string } }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { isOpen, closeSpotlight, openSpotlight } = useSpotlightSearch();
   const [guild, setGuild] = useState<Guild | null>(null);
   const [queue, setQueue] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -162,8 +165,14 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <AppLayout guildId={guild.id} requesterId={session?.user?.id || ''}>
-      <div className="flex-1 flex flex-col h-full">
+    <>
+      <SpotlightSearch 
+        guildId={guild.id} 
+        isOpen={isOpen} 
+        onClose={closeSpotlight} 
+      />
+      <AppLayout guildId={guild.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
+        <div className="flex-1 flex flex-col h-full">
         <div className="flex-none p-8">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center gap-4">
@@ -181,6 +190,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
               <div>
                 <h1 className="text-3xl font-bold">{guild.name}</h1>
                 <p className="text-zinc-400">Music Player</p>
+                <p className="text-zinc-500 text-sm">Press Ctrl+K to search</p>
               </div>
             </div>
           </div>
@@ -222,6 +232,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
-    </AppLayout>
+      </AppLayout>
+    </>
   );
 } 

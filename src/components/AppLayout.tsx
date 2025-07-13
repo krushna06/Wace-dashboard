@@ -12,9 +12,10 @@ interface AppLayoutProps {
   children: React.ReactNode;
   guildId: string;
   requesterId: string;
+  onOpenSpotlight: () => void;
 }
 
-function Sidebar({ playlists, guildId }: { playlists: Playlist[]; guildId: string }) {
+function Sidebar({ playlists, guildId, onOpenSpotlight }: { playlists: Playlist[]; guildId: string; onOpenSpotlight: () => void }) {
   return (
     <div className="w-64 bg-zinc-950 p-6 flex flex-col gap-6">
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
@@ -23,7 +24,12 @@ function Sidebar({ playlists, guildId }: { playlists: Playlist[]; guildId: strin
       </div>
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Search className="w-6 h-6" />
-        <Link href={`/guild/${guildId}/search`} className="hover:text-white transition-colors">Search</Link>
+        <button 
+          onClick={onOpenSpotlight} 
+          className="hover:text-white transition-colors text-left"
+        >
+          Search
+        </button>
       </div>
       
       <div className="mt-6">
@@ -87,7 +93,7 @@ function NowPlaying({ playerState }: { playerState: PlayerState | null }) {
   );
 }
 
-export function AppLayout({ children, guildId, requesterId }: AppLayoutProps) {
+export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: AppLayoutProps) {
   const [playerState, setPlayerState] = useState<PlayerState | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(100);
@@ -138,7 +144,7 @@ export function AppLayout({ children, guildId, requesterId }: AppLayoutProps) {
   return (
     <div className="h-screen bg-black text-white flex flex-col">
       <div className="flex-1 flex overflow-hidden">
-        <Sidebar playlists={playlists} guildId={guildId} />
+        <Sidebar playlists={playlists} guildId={guildId} onOpenSpotlight={onOpenSpotlight} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between p-4 border-b border-zinc-900">
             <h1 className="text-xl font-bold">Wace Dashboard</h1>

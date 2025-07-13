@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { musicApi, type Playlist } from '@/services/api';
 import { useSession } from 'next-auth/react';
 
-export function Sidebar({ guildId }: { guildId?: string }) {
+export function Sidebar({ guildId, onOpenSpotlight }: { guildId?: string; onOpenSpotlight: () => void }) {
   const { data: session } = useSession();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
@@ -33,7 +33,12 @@ export function Sidebar({ guildId }: { guildId?: string }) {
       </div>
       <div className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors">
         <Search className="w-6 h-6" />
-        <Link href={guildId ? `/guild/${guildId}/search` : "/search"} className="hover:text-white transition-colors">Search</Link>
+        <button 
+          onClick={onOpenSpotlight} 
+          className="hover:text-white transition-colors text-left"
+        >
+          Search
+        </button>
       </div>
       
       <div className="mt-6">
