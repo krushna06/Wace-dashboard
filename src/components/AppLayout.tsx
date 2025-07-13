@@ -210,20 +210,18 @@ function Sidebar({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
-      {guildId && (
-        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
-          pathname === `/guild/${guildId}/explore` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-        }`}>
-          <div className="w-6 h-6 flex-shrink-0">
-            <Compass className="w-6 h-6" />
-          </div>
-          {!isCollapsed && (
-            <Link href={`/guild/${guildId}/explore`} className="hover:text-white transition-colors">
-              <span>Explore</span>
-            </Link>
-          )}
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+        (guildId && pathname === `/guild/${guildId}/explore`) || (!guildId && pathname === '/explore') ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+      }`}>
+        <div className="w-6 h-6 flex-shrink-0">
+          <Compass className="w-6 h-6" />
         </div>
-      )}
+        {!isCollapsed && (
+          <Link href={guildId ? `/guild/${guildId}/explore` : '/explore'} className="hover:text-white transition-colors">
+            <span>Explore</span>
+          </Link>
+        )}
+      </div>
       {guildId && (
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
           pathname === `/guild/${guildId}/search` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -321,7 +319,10 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const fetchPlayerState = async () => {
-    if (!guildId) return;
+    if (!guildId) {
+      setPlayerState(null);
+      return;
+    }
     try {
       const state = await musicApi.getPlayer(guildId);
       setPlayerState(state);
@@ -346,7 +347,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
     fetchPlaylists();
     const interval = setInterval(fetchPlayerState, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [guildId]);
 
   useEffect(() => {
     if (!playerState?.pause && playerState?.current) {
@@ -386,10 +387,13 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight }: A
                   <span>Search for music...</span>
                 </button>
               ) : (
-                <div className="w-full bg-zinc-800 text-zinc-400 px-4 py-2 rounded-lg flex items-center gap-3">
+                <button
+                  onClick={onOpenSpotlight}
+                  className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left hover:bg-zinc-700 transition-colors flex items-center gap-3"
+                >
                   <Search className="w-5 h-5 text-zinc-400" />
-                  <span className="text-zinc-400">Search for servers...</span>
-                </div>
+                  <span>Search for music (select a server to play)</span>
+                </button>
               )}
             </div>
             <div className="flex-1 flex justify-end">

@@ -4,9 +4,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { musicApi, type Track } from '@/services/api';
 import { Play, Copy, Check, Search, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface SpotlightSearchProps {
-  guildId: string;
+  guildId?: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -92,6 +93,12 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
   const handlePlayTrack = async (track: Track) => {
     if (!session?.user?.id) {
       console.error('User ID is missing. Cannot play track.');
+      return;
+    }
+    if (!guildId) {
+      toast('Please select a server to play music. You can do this from the Server menu in the sidebar.', {
+        duration: 4000,
+      });
       return;
     }
     try {
