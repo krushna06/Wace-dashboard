@@ -507,6 +507,38 @@ export const spotifyApi = {
   }
 };
 
+export interface UserStats {
+  userId: string;
+  songsPlayed: number;
+  commandsExecuted: number;
+}
+
+export async function getUserStats(userId: string): Promise<UserStats> {
+  try {
+    const { data } = await api.get(`/v1/stats/user/${userId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching user stats:', error);
+    throw new Error(error?.message || 'Failed to load stats');
+  }
+}
+
+export interface GuildStats {
+  guildId: string;
+  songsPlayed: number;
+  commandsExecuted: number;
+}
+
+export async function getGuildStats(guildId: string): Promise<GuildStats> {
+  try {
+    const { data } = await api.get(`/v1/stats/guild/${guildId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching guild stats:', error);
+    throw new Error(error?.message || 'Failed to load guild stats');
+  }
+}
+
 export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<boolean> {
   console.log('DJ_ONLY:', process.env.NEXT_PUBLIC_DJ_ONLY);
   if (process.env.NEXT_PUBLIC_DJ_ONLY !== 'true') return true;

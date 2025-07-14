@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { checkIfUserIsDJ } from '@/services/api';
-import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil } from 'lucide-react';
+import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { musicApi } from '@/services/api';
 
@@ -337,6 +337,18 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
+      <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+        (guildId && pathname === `/guild/${guildId}/stats`) || (!guildId && pathname === '/stats') ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+      }`}>
+        <div className="w-6 h-6 flex-shrink-0">
+          <BarChart2 className="w-6 h-6" />
+        </div>
+        {!isCollapsed && (
+          <Link href={guildId ? `/guild/${guildId}/stats` : '/stats'} className="hover:text-white transition-colors">
+            <span>Stats</span>
+          </Link>
+        )}
+      </div>
       {guildId && (
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
           pathname === `/guild/${guildId}/search` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -394,7 +406,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </ul>
         </div>
       )}
-      {!isCollapsed && guildId && !isGuildsPage && (
+      {!isCollapsed && guildId && !isGuildsPage && pathname !== '/stats' && (
         <div className="mt-auto">
           <Link
             href={`/guild/${guildId}/settings`}
