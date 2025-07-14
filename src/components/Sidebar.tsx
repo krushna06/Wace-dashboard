@@ -56,6 +56,8 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [isClosingConfirmDelete, setIsClosingConfirmDelete] = useState(false);
 
+  const isGuildsPage = pathname === '/guilds';
+
   useEffect(() => {
     const fetchGuilds = async () => {
       if (!session?.accessToken) return;
@@ -353,7 +355,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
         </div>
       )}
       {!isCollapsed && <hr className="border-zinc-800" />}
-      {!isCollapsed && (
+      {!isCollapsed && !isGuildsPage && (
         <div className="mt-1">
           <button className="w-full bg-zinc-800 text-white px-3 py-2 rounded-2xl hover:bg-zinc-700 transition-colors text-sm font-medium mb-4 flex items-center gap-2" onClick={openCreateModal}>
             <ListMusic className="w-4 h-4" />
@@ -392,7 +394,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </ul>
         </div>
       )}
-      {!isCollapsed && guildId && (
+      {!isCollapsed && guildId && !isGuildsPage && (
         <div className="mt-auto">
           <Link
             href={`/guild/${guildId}/settings`}
