@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { musicApi, type Track } from '@/services/api';
-import { Play, Copy, Check, Search, X } from 'lucide-react';
+import { Play, Copy, Check, Search, X, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SpotlightSearchProps {
@@ -23,6 +23,8 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
   const [isClosing, setIsClosing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const [showSourceDropdown, setShowSourceDropdown] = useState(false);
+  const sourceDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -74,6 +76,20 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
       }
     }
   }, [selectedIndex]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (sourceDropdownRef.current && !sourceDropdownRef.current.contains(event.target as Node)) {
+        setShowSourceDropdown(false);
+      }
+    }
+    if (showSourceDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSourceDropdown]);
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -157,14 +173,41 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
             placeholder="Search for music..."
             className="flex-1 bg-transparent text-white placeholder-zinc-400 focus:outline-none text-lg"
           />
-          <select
-            value={searchSource}
-            onChange={(e) => setSearchSource(e.target.value as 'youtube' | 'spotify')}
-            className="bg-zinc-800 text-white px-3 py-1 rounded text-sm focus:outline-none focus:ring-1 focus:ring-white"
-          >
-            <option value="youtube">YouTube</option>
-            <option value="spotify">Spotify</option>
-          </select>
+          <div className="relative" ref={sourceDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setShowSourceDropdown((v) => !v)}
+              className="flex items-center gap-2 bg-zinc-800 text-white px-3 py-1 rounded text-sm focus:outline-none border border-zinc-700 hover:bg-zinc-700 transition-colors min-w-[110px]"
+              aria-haspopup="listbox"
+              aria-expanded={showSourceDropdown}
+            >
+              <span className="capitalize">{searchSource}</span>
+              <ChevronDown className={`w-4 h-4 transition-transform ${showSourceDropdown ? 'rotate-180' : ''}`} />
+            </button>
+            {showSourceDropdown && (
+              <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
+                <ul className="py-1" role="listbox">
+                  {['youtube', 'spotify'].map((source, idx, arr) => (
+                    <li key={source}>
+                      <button
+                        type="button"
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-zinc-700 rounded transition-colors capitalize ${searchSource === source ? 'bg-zinc-700 text-white' : 'text-zinc-200'}${idx < arr.length - 1 ? ' mb-1' : ''}`}
+                        onClick={() => {
+                          setSearchSource(source as 'youtube' | 'spotify');
+                          setShowSourceDropdown(false);
+                        }}
+                        role="option"
+                        aria-selected={searchSource === source}
+                        tabIndex={0}
+                      >
+                        {source.charAt(0).toUpperCase() + source.slice(1)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
           <button
             onClick={handleClose}
             className="text-zinc-400 hover:text-white transition-colors"
