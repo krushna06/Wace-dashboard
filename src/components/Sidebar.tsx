@@ -386,14 +386,14 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
                 )}
                 <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
-                    className="p-1 hover:bg-zinc-700 rounded"
+                    className="p-1 rounded"
                     title="Edit Playlist"
                     onClick={() => openEditModal(playlist)}
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
                   <button
-                    className="p-1 hover:bg-zinc-700 rounded"
+                    className="p-1 rounded"
                     title="Delete Playlist"
                     onClick={() => openConfirmDelete(playlist.id)}
                     disabled={deletingId === playlist.id}
