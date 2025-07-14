@@ -4,9 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { useSession } from 'next-auth/react';
 import { getGuildStats, GuildStats } from '@/services/api';
+import { SpotlightSearch } from '@/components/SpotlightSearch';
+import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 
 export default function GuildStatsPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
+  const { isOpen, closeSpotlight, openSpotlight } = useSpotlightSearch();
   const [stats, setStats] = useState<GuildStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +31,13 @@ export default function GuildStatsPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   return (
-    <AppLayout guildId={params.id} requesterId={session?.user?.id || ''} onOpenSpotlight={() => {}}>
+    <>
+      <SpotlightSearch 
+        guildId={params.id} 
+        isOpen={isOpen} 
+        onClose={closeSpotlight} 
+      />
+    <AppLayout guildId={params.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
       <div className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center gap-3 mb-8">
@@ -51,5 +60,6 @@ export default function GuildStatsPage({ params }: { params: { id: string } }) {
         </div>
       </div>
     </AppLayout>
+    </>
   );
 } 

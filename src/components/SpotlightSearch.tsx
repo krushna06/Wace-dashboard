@@ -180,7 +180,7 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
               className="flex items-center gap-2 bg-zinc-800 text-white px-3 py-1 rounded text-sm focus:outline-none border border-zinc-700 hover:bg-zinc-700 transition-colors min-w-[110px]"
               aria-haspopup="listbox"
               aria-expanded={showSourceDropdown}
-            >
+          >
               <span className="capitalize">{searchSource}</span>
               <ChevronDown className={`w-4 h-4 transition-transform ${showSourceDropdown ? 'rotate-180' : ''}`} />
             </button>
