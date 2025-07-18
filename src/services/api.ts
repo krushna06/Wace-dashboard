@@ -555,3 +555,93 @@ export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<
     return false;
   }
 }
+
+export interface TopSong {
+  guildId: string;
+  songId: string;
+  title: string;
+  author: string;
+  uri: string;
+  playCount: number;
+}
+
+export interface TopSongsResponse {
+  guildId: string;
+  topSongs: TopSong[];
+}
+
+export async function getGuildTopSongs(guildId: string): Promise<TopSongsResponse> {
+  try {
+    const { data } = await api.get(`/v1/stats/top-songs/${guildId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching top songs:', error);
+    throw new Error(error?.message || 'Failed to load top songs');
+  }
+}
+
+export interface TopUser {
+  userId: string;
+  username: string;
+  bot?: boolean;
+  guildId: string;
+  songsPlayed: number;
+  commandsExecuted: number;
+}
+
+export interface TopUsersResponse {
+  guildId: string;
+  topUsers: TopUser[];
+}
+
+export async function getGuildTopUsers(guildId: string): Promise<TopUsersResponse> {
+  try {
+    const { data } = await api.get(`/v1/stats/top-users/${guildId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching top users:', error);
+    throw new Error(error?.message || 'Failed to load top users');
+  }
+}
+
+export interface LastPlayedSong {
+  guildId: string;
+  songId: string;
+  title: string;
+  author: string;
+  uri: string;
+  playedAt: number;
+}
+
+export interface LastPlayedResponse {
+  guildId: string;
+  lastPlayed: LastPlayedSong;
+}
+
+export async function getGuildLastPlayed(guildId: string): Promise<LastPlayedResponse> {
+  try {
+    const { data } = await api.get(`/v1/stats/last-played/${guildId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching last played song:', error);
+    throw new Error(error?.message || 'Failed to load last played song');
+  }
+}
+
+export interface DiscordUserInfo {
+  id: string;
+  username: string;
+  global_name?: string;
+  avatar?: string;
+  bot?: boolean;
+}
+
+export async function getDiscordUserInfo(userId: string): Promise<DiscordUserInfo> {
+  try {
+    const { data } = await api.get(`/v1/users/${userId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching Discord user info:', error);
+    throw new Error(error?.message || 'Failed to fetch user info');
+  }
+}

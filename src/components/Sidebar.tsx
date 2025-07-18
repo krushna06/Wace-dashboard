@@ -228,15 +228,14 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   };
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-3 transition-all duration-300 relative pb-32`}>
-      {/* Toggle Button */}
+    <div className={`${isCollapsed ? 'w-20' : 'w-64'} bg-[#121212] p-6 flex flex-col gap-3 transition-all duration-300 relative pb-32`}>
       <button
         onClick={onToggle}
-        className={`absolute top-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-1.5 rounded-full transition-colors border border-zinc-700 ${isCollapsed ? '-right-6' : '-right-5'}`}
+        style={{ zIndex: 20 }}
+        className={`absolute top-6 ${isCollapsed ? '-right-6' : '-right-5'} bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white p-1.5 rounded-full transition-colors border border-zinc-700 shadow-lg`}
       >
         {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
       </button>
-      {/* Guild Selector */}
       {!isCollapsed && (
         <div className="relative guild-selector">
           <button
@@ -406,7 +405,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </ul>
         </div>
       )}
-      {!isCollapsed && guildId && !isGuildsPage && pathname !== '/stats' && (
+      {guildId && !isGuildsPage && pathname !== '/stats' && (
         <div className="mt-auto">
           <Link
             href={`/guild/${guildId}/settings`}
@@ -422,7 +421,6 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         </div>
       )}
-      {/* Edit Playlist Modal */}
       {editingPlaylist && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className={`bg-zinc-900 p-6 rounded-lg shadow-lg w-full max-w-md border border-zinc-700 ${isClosingEdit ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}` }>
@@ -503,7 +501,6 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </div>
         </div>
       )}
-      {/* Confirm Delete Modal */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className={`bg-zinc-900 p-6 rounded-lg shadow-lg w-full max-w-md border border-zinc-700 ${isClosingConfirmDelete ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}` }>
