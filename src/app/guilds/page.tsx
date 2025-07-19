@@ -125,9 +125,64 @@ export default function GuildsPage() {
           {listeningGuilds.length > 0 && (
             <>
               <h1 className="text-2xl font-bold mb-4">You are now listening in</h1>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {listeningGuilds.map((guild) => (
-                  <div key={guild.id} className="bg-zinc-900 rounded-lg p-6 flex items-center justify-between">
+              <div className="mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {listeningGuilds.map((guild) => (
+                    <div key={guild.id} className="bg-zinc-900 rounded-lg overflow-hidden flex flex-col p-0 max-w-sm">
+                      <div className="relative h-20 w-full">
+                        <img
+                          src="/default-banner.svg"
+                          alt="Banner"
+                          className="w-full h-full object-cover rounded-t-lg"
+                        />
+                        <div className="absolute inset-0 bg-black/20 rounded-t-lg"></div>
+                      </div>
+                      <div className="flex items-center justify-between gap-4 p-6">
+                        <div className="flex items-center gap-4">
+                          {guild.icon ? (
+                            <img
+                              src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                              alt={guild.name}
+                              className="w-12 h-12 rounded-full"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
+                              <span className="text-xl font-bold">{guild.name.charAt(0)}</span>
+                            </div>
+                          )}
+                          <div>
+                            <h2 className="font-semibold">{guild.name}</h2>
+                            <p className="text-zinc-400 text-sm">
+                              {guild.owner ? 'Owner' : 'Member'}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleGuildClick(guild.id)}
+                          className="bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
+                        >
+                          Manage
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          <h1 className="text-2xl font-bold mb-4">My servers</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {myServers.map((guild) => (
+                <div key={guild.id} className="bg-zinc-900 rounded-lg overflow-hidden flex flex-col p-0 max-w-sm">
+                  <div className="relative h-20 w-full">
+                    <img
+                      src="/default-banner.svg"
+                      alt="Banner"
+                      className="w-full h-full object-cover rounded-t-lg"
+                    />
+                    <div className="absolute inset-0 bg-black/20 rounded-t-lg"></div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 p-6">
                     <div className="flex items-center gap-4">
                       {guild.icon ? (
                         <img
@@ -151,45 +206,12 @@ export default function GuildsPage() {
                       onClick={() => handleGuildClick(guild.id)}
                       className="bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
                     >
-                      Manage
+                      View
                     </button>
                   </div>
-                ))}
-              </div>
-            </>
-          )}
-          <h1 className="text-2xl font-bold mb-4">My servers</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {myServers.map((guild) => (
-              <div key={guild.id} className="bg-zinc-900 rounded-lg p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  {guild.icon ? (
-                    <img
-                      src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                      alt={guild.name}
-                      className="w-12 h-12 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center">
-                      <span className="text-xl font-bold">{guild.name.charAt(0)}</span>
-                    </div>
-                  )}
-                  <div>
-                    <h2 className="font-semibold">{guild.name}</h2>
-                    <p className="text-zinc-400 text-sm">
-                      {guild.owner ? 'Owner' : 'Member'}
-                    </p>
-                  </div>
                 </div>
-                <button
-                  onClick={() => handleGuildClick(guild.id)}
-                  className="bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
-                >
-                  View
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           {error && (
             <div className="text-red-500 text-center mt-4">{error}</div>
           )}

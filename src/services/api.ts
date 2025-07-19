@@ -628,6 +628,36 @@ export async function getGuildLastPlayed(guildId: string): Promise<LastPlayedRes
   }
 }
 
+export interface UserTopSongsResponse {
+  userId: string;
+  topSongs: TopSong[];
+}
+
+export async function getUserTopSongs(userId: string): Promise<UserTopSongsResponse> {
+  try {
+    const { data } = await api.get(`/v1/stats/top-songs-user/${userId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching user top songs:', error);
+    throw new Error(error?.message || 'Failed to load user top songs');
+  }
+}
+
+export interface UserLastPlayedResponse {
+  userId: string;
+  lastPlayed: LastPlayedSong;
+}
+
+export async function getUserLastPlayed(userId: string): Promise<UserLastPlayedResponse> {
+  try {
+    const { data } = await api.get(`/v1/stats/last-played-user/${userId}`);
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching user last played song:', error);
+    throw new Error(error?.message || 'Failed to load user last played song');
+  }
+}
+
 export interface DiscordUserInfo {
   id: string;
   username: string;
