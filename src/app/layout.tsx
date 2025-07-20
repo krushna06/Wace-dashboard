@@ -6,8 +6,8 @@ import { Providers } from '@/components/Providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Wace Dashboard',
-  description: 'Wace Discord Music Bot Dashboard',
+  title: process.env.NEXT_PUBLIC_SITE_TITLE || 'Wace Dashboard',
+  description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION || 'Wace Discord Music Bot Dashboard',
 }
 
 export default function RootLayout({

@@ -114,7 +114,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { isOpen, closeSpotlight, openSpotlight } = useSpotlightSearch();
   const [guild, setGuild] = useState<Guild | null>(null);
-  const [recentlyPlayed, setRecentlyPlayed] = useState<RecentlyPlayedTrack[]>([]);
+  const [recentlyPlayed, setRecentlyPlayed] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [djChecked, setDjChecked] = useState(false);
@@ -194,28 +194,23 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   }, [djChecked, isDJ, session?.accessToken, params.id]);
 
   useEffect(() => {
-    setRecentlyPlayed(getRecentlyPlayed());
-  }, []);
+    if (!session?.user?.id) return;
+    const fetchHistory = async () => {
+      const history = await musicApi.getUserHistory(String(session.user.id));
+      setRecentlyPlayed(history);
+    };
+    fetchHistory();
+  }, [session?.user?.id]);
 
   useEffect(() => {
-    const handleTrackPlayed = (event: CustomEvent) => {
-      setRecentlyPlayed(getRecentlyPlayed());
-    };
 
-    const handleStorageChange = () => {
-      setRecentlyPlayed(getRecentlyPlayed());
-    };
-
-    window.addEventListener('trackPlayed', handleTrackPlayed as EventListener);
-    window.addEventListener('storage', handleStorageChange);
     
     return () => {
-      window.removeEventListener('trackPlayed', handleTrackPlayed as EventListener);
-      window.removeEventListener('storage', handleStorageChange);
+      
     };
   }, []);
 
-  const handlePlayTrack = async (track: RecentlyPlayedTrack) => {
+  const handlePlayTrack = async (track: any) => {
     if (!session?.user?.id) {
       console.error('User ID is missing. Cannot play track.');
       return;
@@ -238,15 +233,6 @@ export default function GuildPage({ params }: { params: { id: string } }) {
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     return `${days}d ago`;
-  };
-
-  const refreshRecentlyPlayed = () => {
-    setRecentlyPlayed(getRecentlyPlayed());
-  };
-
-  const debugRecentlyPlayed = () => {
-    console.log('Recently played from localStorage:', getRecentlyPlayed());
-    console.log('Current state:', recentlyPlayed);
   };
 
   if (status === 'loading' || isLoading || !djChecked) {
@@ -281,11 +267,11 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   return (
     <>
       <SpotlightSearch 
-        guildId={guild.id} 
+        guildId={guild?.id} 
         isOpen={isOpen} 
         onClose={closeSpotlight} 
       />
-      <AppLayout guildId={guild.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
+      <AppLayout guildId={guild?.id} requesterId={session?.user?.id || ''} onOpenSpotlight={openSpotlight}>
         <div className="flex-1 p-8">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
@@ -298,54 +284,45 @@ export default function GuildPage({ params }: { params: { id: string } }) {
                 <p className="text-zinc-400">Your music listening history</p>
               </div>
             </div>
-            {/* Recently Played Songs Grid */}
-            {recentlyPlayed.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-                {recentlyPlayed.map((track) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
+              {recentlyPlayed.length > 0 ? recentlyPlayed.map((track) => {
+                const fallback = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center';
+                const imageSrc = typeof track.image === 'string' && track.image ? track.image : fallback;
+                return (
                   <div 
-                    key={`${track.uri}-${track.playedAt}`} 
+                    key={track.songId}
                     className="group bg-zinc-900/50 rounded-lg p-4 hover:bg-zinc-800/50 transition-all duration-300 cursor-pointer"
                     onClick={() => handlePlayTrack(track)}
                   >
-                    {/* Album Art */}
                     <div className="relative mb-4">
                       <img 
-                        src={track.thumbnail} 
+                        src={imageSrc || fallback}
                         alt={track.title}
                         className="w-full aspect-square object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          console.log('Image failed to load:', track.thumbnail);
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center';
-                        }}
                       />
-                      {/* Play Button Overlay */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-md flex items-center justify-center">
                         <div className="bg-white text-black rounded-full p-3 group-hover:scale-110 transition-transform duration-300">
                           <Play className="w-5 h-5 ml-0.5" />
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Track Info */}
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-white truncate group-hover:text-green-400 transition-colors">
-                        {track.title}
-                      </h3>
-                      <p className="text-zinc-400 text-sm truncate">
-                        {track.author}
-                      </p>
-                      <p className="text-zinc-500 text-xs mt-1">
-                        {formatPlayedAt(track.playedAt)}
-                      </p>
-                    </div>
+                    <h3 className="font-semibold text-white truncate group-hover:text-green-400 transition-colors">
+                      {track.title}
+                    </h3>
+                    <p className="text-zinc-400 text-sm truncate">
+                      {track.author}
+                    </p>
+                    <p className="text-zinc-500 text-xs mt-1">
+                      Plays: {track.playCount}
+                    </p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center text-zinc-400 py-8">
-                No recently played songs. Start playing some music!
-              </div>
-            )}
+                );
+              }) : (
+                <div className="text-center text-zinc-400 py-8 col-span-full">
+                  No recently played songs. Start playing some music!
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </AppLayout>

@@ -420,6 +420,16 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async getUserHistory(userId: string): Promise<any[]> {
+    try {
+      const { data } = await api.get(`/v1/user-history/${userId}`);
+      return data.history || [];
+    } catch (error) {
+      console.error('Error fetching user history:', error);
+      return [];
+    }
+  },
 };
 
 export interface TrendingTrack {
