@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { UserProfile } from '@/components/UserProfile';
 import { Search, Server, ListMusic, Compass } from 'lucide-react';
 import axios from 'axios';
-import { checkIfUserIsDJ, musicApi } from '@/services/api';
+import { checkIfUserIsDJ, musicApi, checkIfUserIsPremium } from '@/services/api';
 import { AppLayout } from '@/components/AppLayout';
 import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 import { SpotlightSearch } from '@/components/SpotlightSearch';
@@ -100,6 +100,11 @@ export default function GuildsPage() {
     const isDJ = await checkIfUserIsDJ(guildId, userId);
     if (!isDJ) {
       setError('You are not a DJ in this server. Access denied.');
+      return;
+    }
+    const isPremium = await checkIfUserIsPremium(userId);
+    if (!isPremium) {
+      setError('You are not a premium user. Access denied.');
       return;
     }
     router.push(`/guild/${guildId}`);

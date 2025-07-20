@@ -93,3 +93,21 @@ If you want to disable this restriction, set:
 ```
 NEXT_PUBLIC_DJ_ONLY=false
 ```
+
+## PREMIUM_ONLY Feature
+
+To restrict access to pages only to users with premium status:
+
+1. Add the following to your `.env` file:
+
+```
+NEXT_PUBLIC_PREMIUM_ONLY=true
+```
+
+2. If set to `true`, when a user tries to access a premium-only feature, the app will call the Premium API to check if the user has premium status. If not, access will be denied.
+
+If you want to disable this restriction, set:
+
+```
+NEXT_PUBLIC_PREMIUM_ONLY=false
+```

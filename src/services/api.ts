@@ -576,6 +576,19 @@ export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<
   }
 }
 
+export async function checkIfUserIsPremium(userId: string): Promise<boolean> {
+  console.log('PREMIUM_ONLY:', process.env.NEXT_PUBLIC_PREMIUM_ONLY);
+  if (process.env.NEXT_PUBLIC_PREMIUM_ONLY !== 'true') return true;
+  if (!userId) return false;
+  try {
+    const response = await api.get(`/v1/premium/user/${userId}`);
+    return response.data?.data?.premium === true;
+  } catch (err) {
+    console.log('Premium API error:', err);
+    return false;
+  }
+}
+
 export interface TopSong {
   guildId: string;
   songId: string;

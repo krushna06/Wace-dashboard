@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
 import { SpotlightSearch } from '@/components/SpotlightSearch';
 import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
-import { musicApi, type Track, checkIfUserIsDJ } from '@/services/api';
+import { musicApi, type Track, checkIfUserIsDJ, checkIfUserIsPremium } from '@/services/api';
 import { Play, Music } from 'lucide-react';
 import axios from 'axios';
 
@@ -119,6 +119,8 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [djChecked, setDjChecked] = useState(false);
   const [isDJ, setIsDJ] = useState(false);
+  const [premiumChecked, setPremiumChecked] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -129,7 +131,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (status === 'loading') return;
 
-    const checkDJ = async () => {
+    const checkDJAndPremium = async () => {
       const userId = session?.user?.id;
       const guildId = params.id;
       if (!userId || !guildId) {
@@ -137,21 +139,29 @@ export default function GuildPage({ params }: { params: { id: string } }) {
         setIsLoading(false);
         setIsDJ(false);
         setDjChecked(true);
+        setIsPremium(false);
+        setPremiumChecked(true);
         return;
       }
       const isDJ = await checkIfUserIsDJ(guildId, userId);
+      setIsDJ(isDJ);
+      setDjChecked(true);
       if (!isDJ) {
         setError('You are not a DJ in this server. Access denied.');
         setIsLoading(false);
-        setIsDJ(false);
-        setDjChecked(true);
         return;
       }
-      setIsDJ(true);
-      setDjChecked(true);
+      const isPremium = await checkIfUserIsPremium(userId);
+      setIsPremium(isPremium);
+      setPremiumChecked(true);
+      if (!isPremium) {
+        setError('You are not a premium user. Access denied.');
+        setIsLoading(false);
+        return;
+      }
     };
 
-    checkDJ();
+    checkDJAndPremium();
   }, [session?.user?.id, params.id, status]);
 
   useEffect(() => {
@@ -235,7 +245,7 @@ export default function GuildPage({ params }: { params: { id: string } }) {
     return `${days}d ago`;
   };
 
-  if (status === 'loading' || isLoading || !djChecked) {
+  if (status === 'loading' || isLoading || !djChecked || !premiumChecked) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
