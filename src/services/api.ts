@@ -410,6 +410,16 @@ export const musicApi = {
       throw error;
     }
   },
+
+  async getLyrics(guildId: string): Promise<any> {
+    try {
+      const { data } = await api.get(`/v1/lyrics/${guildId}`);
+      return data;
+    } catch (error) {
+      console.error('Error fetching lyrics:', error);
+      throw error;
+    }
+  },
 };
 
 export interface TrendingTrack {

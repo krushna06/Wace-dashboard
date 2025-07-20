@@ -35,6 +35,9 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const [speedAmount, setSpeedAmount] = useState(5);
   const [filtersLoading, setFiltersLoading] = useState(true);
   const filterDropdownRef = React.useRef<HTMLDivElement>(null);
+  const [showLyricsModal, setShowLyricsModal] = useState(false);
+  const [lyrics, setLyrics] = useState<string | null>(null);
+  const [isClosingLyrics, setIsClosingLyrics] = useState(false);
 
   React.useEffect(() => {
     async function fetchVolume() {
@@ -275,257 +278,305 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     }
   };
 
+  const handleLyrics = async () => {
+    try {
+      const result = await musicApi.getLyrics(guildId);
+      if (result?.lyrics) {
+        setLyrics(result.lyrics);
+        setShowLyricsModal(true);
+        setIsClosingLyrics(false);
+      } else {
+        toast.error('No lyrics found.');
+      }
+    } catch (error: any) {
+      toast.error('Failed to fetch lyrics.');
+    }
+  };
+
+  const handleCloseLyrics = () => {
+    setIsClosingLyrics(true);
+    setTimeout(() => {
+      setShowLyricsModal(false);
+      setIsClosingLyrics(false);
+      setLyrics(null);
+    }, 200);
+  };
+
   let loopColor = 'text-zinc-400 hover:text-white';
   if (loopMode === 'song') loopColor = 'text-green-400';
   else if (loopMode === 'queue') loopColor = 'text-pink-400';
 
   return (
-    <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
-      <div className="flex items-center w-full h-full">
-        <div className="flex items-center gap-4 w-64 min-w-0 justify-start">
-          {playerState?.current ? (
-            <>
-              <img
-                src={playerState.current.thumbnail}
-                alt={playerState.current.title}
-                className="w-14 h-14 object-cover rounded flex-shrink-0"
-              />
-              <div className="min-w-0">
-                <h3 className="font-semibold truncate max-w-[120px]">{playerState.current.title}</h3>
-                <p className="text-zinc-400 text-sm truncate max-w-[120px]">{playerState.current.author}</p>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
-                <span className="text-zinc-500 text-xs">No track</span>
-              </div>
-              <div className="min-w-0">
-                <h3 className="font-semibold truncate max-w-[200px] flex items-center">
-                  {playerState?.current?.title ?? 'Nothing is being played'}
-                  <span className="ml-1">...</span>
-                </h3>
-                <p className="text-zinc-400 text-sm truncate max-w-[200px]">{playerState?.current?.author ?? ''}</p>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="flex flex-col items-center gap-2 flex-1 justify-center">
-          <div className="flex items-center gap-4 justify-center">
-            <Shuffle 
-              onClick={handleShuffle}
-              className={`w-5 h-5 ${localShuffle ? 'text-green-400' : 'text-zinc-400'} hover:text-white cursor-pointer transition-colors`}
-            />
-            <SkipBack 
-              onClick={handlePrevious}
-              className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
-            />
-            <button
-              onClick={handlePlayPause}
-              className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-black hover:scale-105 transition-all"
-            >
-              {playerState?.pause ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-            </button>
-            <SkipForward 
-              onClick={handleSkip}
-              className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
-            />
-            <Repeat 
-              onClick={handleLoop}
-              className={`w-5 h-5 cursor-pointer transition-colors ${loopColor}`}
-            />
+    <>
+      <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
+        <div className="flex items-center w-full h-full">
+          <div className="flex items-center gap-4 w-64 min-w-0 justify-start">
+            {playerState?.current ? (
+              <>
+                <img
+                  src={playerState.current.thumbnail}
+                  alt={playerState.current.title}
+                  className="w-14 h-14 object-cover rounded flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <h3 className="font-semibold truncate max-w-[120px]">{playerState.current.title}</h3>
+                  <p className="text-zinc-400 text-sm truncate max-w-[120px]">{playerState.current.author}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
+                  <span className="text-zinc-500 text-xs">No track</span>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold truncate max-w-[200px] flex items-center">
+                    {playerState?.current?.title ?? 'Nothing is being played'}
+                    <span className="ml-1">...</span>
+                  </h3>
+                  <p className="text-zinc-400 text-sm truncate max-w-[200px]">{playerState?.current?.author ?? ''}</p>
+                </div>
+              </>
+            )}
           </div>
-          <div className="w-full flex items-center gap-2 justify-center">
-            <span className="text-xs text-zinc-400">
-              {formatTime(currentTime)}
-            </span>
-            <div 
-              className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer max-w-md"
-              onClick={handleSeek}
-            >
-              <div
-                className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                style={{ 
-                  width: playerState?.current 
-                    ? `${(currentTime / playerState.current.length) * 100}%` 
-                    : '0%' 
-                }}
+
+          <div className="flex flex-col items-center gap-2 flex-1 justify-center">
+            <div className="flex items-center gap-4 justify-center">
+              <Shuffle 
+                onClick={handleShuffle}
+                className={`w-5 h-5 ${localShuffle ? 'text-green-400' : 'text-zinc-400'} hover:text-white cursor-pointer transition-colors`}
+              />
+              <SkipBack 
+                onClick={handlePrevious}
+                className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
+              />
+              <button
+                onClick={handlePlayPause}
+                className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-black hover:scale-105 transition-all"
+              >
+                {playerState?.pause ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+              </button>
+              <SkipForward 
+                onClick={handleSkip}
+                className="w-5 h-5 text-zinc-400 hover:text-white cursor-pointer transition-colors" 
+              />
+              <Repeat 
+                onClick={handleLoop}
+                className={`w-5 h-5 cursor-pointer transition-colors ${loopColor}`}
               />
             </div>
-            <span className="text-xs text-zinc-400">
-              {playerState?.current ? formatTime(playerState.current.length) : '0:00'}
-            </span>
+            <div className="w-full flex items-center gap-2 justify-center">
+              <span className="text-xs text-zinc-400">
+                {formatTime(currentTime)}
+              </span>
+              <div 
+                className="flex-1 h-1 bg-zinc-800 rounded-full group cursor-pointer max-w-md"
+                onClick={handleSeek}
+              >
+                <div
+                  className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                  style={{ 
+                    width: playerState?.current 
+                      ? `${(currentTime / playerState.current.length) * 100}%` 
+                      : '0%' 
+                  }}
+                />
+              </div>
+              <span className="text-xs text-zinc-400">
+                {playerState?.current ? formatTime(playerState.current.length) : '0:00'}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-1 w-64 justify-end h-full -mt-2">
-          <button
-            className="p-2 transition-colors flex items-center justify-center h-10 w-10 text-zinc-400 hover:text-white"
-            title="Lyrics (coming soon)"
-            type="button"
-          >
-            <ScrollText className="w-5 h-5" />
-          </button>
-          <div className="relative flex items-center h-10" ref={filterDropdownRef}>
+          <div className="flex items-center gap-1 w-64 justify-end h-full -mt-2">
             <button
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-              className="p-2 transition-colors"
-              title={`Audio Filters${currentFilter ? ` - ${currentFilter.filter}${currentFilter.amount ? ` (${currentFilter.amount})` : ''}` : ''}`}
+              className="p-2 transition-colors flex items-center justify-center h-10 w-10 text-zinc-400 hover:text-white"
+              title="Lyrics"
+              type="button"
+              onClick={handleLyrics}
             >
-              <Filter 
-                className={`w-5 h-5 ${
-                    currentFilter ? 'text-green-400' : 'text-zinc-400'
-                  } hover:text-white`}
-              />
+              <ScrollText className="w-5 h-5" />
             </button>
-            {showFilterDropdown && (
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
-                  <div className="p-2">
-                    <div className="text-xs text-zinc-400 mb-2 px-2">Audio Filters</div>
-                    {currentFilter && (
-                      <div className="mb-2 p-2 bg-zinc-700 rounded text-xs">
-                        <div className="flex items-center justify-between">
-                          <span>Current: {currentFilter.filter}</span>
-                          <button
-                            onClick={handleClearFilters}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
+            <div className="relative flex items-center h-10" ref={filterDropdownRef}>
+              <button
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                className="p-2 transition-colors"
+                title={`Audio Filters${currentFilter ? ` - ${currentFilter.filter}${currentFilter.amount ? ` (${currentFilter.amount})` : ''}` : ''}`}
+              >
+                <Filter 
+                  className={`w-5 h-5 ${
+                      currentFilter ? 'text-green-400' : 'text-zinc-400'
+                    } hover:text-white`}
+                />
+              </button>
+              {showFilterDropdown && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
+                    <div className="p-2">
+                      <div className="text-xs text-zinc-400 mb-2 px-2">Audio Filters</div>
+                      {currentFilter && (
+                        <div className="mb-2 p-2 bg-zinc-700 rounded text-xs">
+                          <div className="flex items-center justify-between">
+                            <span>Current: {currentFilter.filter}</span>
+                            <button
+                              onClick={handleClearFilters}
+                              className="text-red-400 hover:text-red-300"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                          {currentFilter.amount && (
+                            <span className="text-zinc-400">Amount: {currentFilter.amount}</span>
+                          )}
                         </div>
-                        {currentFilter.amount && (
-                          <span className="text-zinc-400">Amount: {currentFilter.amount}</span>
+                      )}
+                      <div className="max-h-48 overflow-y-auto scrollbar-custom space-y-1">
+                        {filtersLoading ? (
+                          <div className="px-2 py-1 text-sm text-zinc-400">Loading filters...</div>
+                        ) : availableFilters.length > 0 ? (
+                          availableFilters.map((filter) => (
+                            <button
+                              key={filter}
+                              onClick={() => {
+                                if (filter === 'bass') {
+                                  handleApplyFilter(filter, bassAmount);
+                                } else if (filter === 'speed') {
+                                  handleApplyFilter(filter, speedAmount);
+                                } else {
+                                  handleApplyFilter(filter);
+                                }
+                              }}
+                              className="w-full text-left px-2 py-1 text-sm hover:bg-zinc-700 rounded transition-colors"
+                            >
+                              {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-2 py-1 text-sm text-zinc-400">No filters available</div>
                         )}
                       </div>
-                    )}
-                    <div className="max-h-48 overflow-y-auto scrollbar-custom space-y-1">
-                      {filtersLoading ? (
-                        <div className="px-2 py-1 text-sm text-zinc-400">Loading filters...</div>
-                      ) : availableFilters.length > 0 ? (
-                        availableFilters.map((filter) => (
-                          <button
-                            key={filter}
-                            onClick={() => {
-                              if (filter === 'bass') {
-                                handleApplyFilter(filter, bassAmount);
-                              } else if (filter === 'speed') {
-                                handleApplyFilter(filter, speedAmount);
-                              } else {
-                                handleApplyFilter(filter);
-                              }
-                            }}
-                            className="w-full text-left px-2 py-1 text-sm hover:bg-zinc-700 rounded transition-colors"
-                          >
-                            {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-2 py-1 text-sm text-zinc-400">No filters available</div>
+                      {availableFilters.includes('bass') && (
+                        <div className="mt-2 p-2 border-t border-zinc-700">
+                          <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
+                            <span>Bass Amount</span>
+                            <span>{bassAmount}</span>
+                          </div>
+                          <div className="relative h-1 bg-zinc-600 rounded-full">
+                            <input
+                              type="range"
+                              min="1"
+                              max="10"
+                              value={bassAmount}
+                              onChange={(e) => setBassAmount(parseInt(e.target.value))}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div 
+                              className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                              style={{ width: `${(bassAmount / 10) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {availableFilters.includes('speed') && (
+                        <div className="mt-2 p-2 border-t border-zinc-700">
+                          <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
+                            <span>Speed Amount</span>
+                            <span>{speedAmount}</span>
+                          </div>
+                          <div className="relative h-1 bg-zinc-600 rounded-full">
+                            <input
+                              type="range"
+                              min="1"
+                              max="10"
+                              value={speedAmount}
+                              onChange={(e) => setSpeedAmount(parseInt(e.target.value))}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div 
+                              className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                              style={{ width: `${(speedAmount / 10) * 100}%` }}
+                            />
+                          </div>
+                        </div>
                       )}
                     </div>
-                    {availableFilters.includes('bass') && (
-                      <div className="mt-2 p-2 border-t border-zinc-700">
-                        <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
-                          <span>Bass Amount</span>
-                          <span>{bassAmount}</span>
-                        </div>
-                        <div className="relative h-1 bg-zinc-600 rounded-full">
-                          <input
-                            type="range"
-                            min="1"
-                            max="10"
-                            value={bassAmount}
-                            onChange={(e) => setBassAmount(parseInt(e.target.value))}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          />
-                          <div 
-                            className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                            style={{ width: `${(bassAmount / 10) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                    {availableFilters.includes('speed') && (
-                      <div className="mt-2 p-2 border-t border-zinc-700">
-                        <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
-                          <span>Speed Amount</span>
-                          <span>{speedAmount}</span>
-                        </div>
-                        <div className="relative h-1 bg-zinc-600 rounded-full">
-                          <input
-                            type="range"
-                            min="1"
-                            max="10"
-                            value={speedAmount}
-                            onChange={(e) => setSpeedAmount(parseInt(e.target.value))}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                          />
-                          <div 
-                            className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                            style={{ width: `${(speedAmount / 10) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
                   </div>
+                )}
+              </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleMute}
+                className="p-2 hover:bg-zinc-800 rounded-full transition-colors flex items-center justify-center h-10 w-10"
+              >
+                {isMuted ? (
+                  <VolumeX className="w-5 h-5" />
+                ) : (
+                  <Volume2 className="w-5 h-5" />
+                )}
+              </button>
+              <div className="w-24">
+                <div className="relative h-1 bg-zinc-800 rounded-full">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={localVolume}
+                    onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+                    onMouseDown={() => setIsDragging(true)}
+                    onMouseUp={handleVolumeDragEnd}
+                    onTouchStart={() => setIsDragging(true)}
+                    onTouchEnd={handleVolumeDragEnd}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                    style={{ width: `${localVolume}%` }}
+                  />
                 </div>
-              )}
-            </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={handleMute}
-              className="p-2 hover:bg-zinc-800 rounded-full transition-colors flex items-center justify-center h-10 w-10"
-            >
-              {isMuted ? (
-                <VolumeX className="w-5 h-5" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
-            </button>
-            <div className="w-24">
-              <div className="relative h-1 bg-zinc-800 rounded-full">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={localVolume}
-                  onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
-                  onMouseDown={() => setIsDragging(true)}
-                  onMouseUp={handleVolumeDragEnd}
-                  onTouchStart={() => setIsDragging(true)}
-                  onTouchEnd={handleVolumeDragEnd}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div 
-                  className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                  style={{ width: `${localVolume}%` }}
-                />
               </div>
             </div>
           </div>
         </div>
+        {showVolumeNotification && (
+          <div className="fixed top-4 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+            Volume: {localVolume}%
+          </div>
+        )}
+        {showShuffleNotification && (
+          <div className="fixed top-12 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+            {shuffleNotificationText}
+          </div>
+        )}
+        {showLoopNotification && (
+          <div className="fixed top-20 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+            {loopNotificationText}
+          </div>
+        )}
+        {showFilterNotification && (
+          <div className="fixed top-28 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
+            {filterNotificationText}
+          </div>
+        )}
       </div>
-      {showVolumeNotification && (
-        <div className="fixed top-4 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
-          Volume: {localVolume}%
+      {showLyricsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={handleCloseLyrics}
+          />
+          <div
+            className={`relative bg-zinc-900 rounded-lg shadow-2xl p-8 max-w-2xl w-full mx-4 z-10 text-white ${isClosingLyrics ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}`}
+            style={{ whiteSpace: 'pre-line', maxHeight: 600, overflowY: 'auto' }}
+          >
+            <button
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+              onClick={handleCloseLyrics}
+            >
+              Close
+            </button>
+            <h2 className="text-2xl font-bold mb-4">Lyrics</h2>
+            {lyrics}
+          </div>
         </div>
       )}
-      {showShuffleNotification && (
-        <div className="fixed top-12 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
-          {shuffleNotificationText}
-        </div>
-      )}
-      {showLoopNotification && (
-        <div className="fixed top-20 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
-          {loopNotificationText}
-        </div>
-      )}
-      {showFilterNotification && (
-        <div className="fixed top-28 right-4 bg-zinc-800 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in-out">
-          {filterNotificationText}
-        </div>
-      )}
-    </div>
+    </>
   );
 }
