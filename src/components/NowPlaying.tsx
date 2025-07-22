@@ -41,7 +41,7 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
   const handleRemoveFromQueue = async (position: number) => {
     try {
       await musicApi.removeFromQueue(guildId, position);
-      setQueue((prev) => prev.filter((_, idx) => idx !== position));
+      setQueue((prev) => prev.filter((_, idx) => idx !== position - 1));
     } catch (error) {
     }
   };
@@ -89,7 +89,7 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
             <div className="text-zinc-500 text-xs text-center">Queue is empty</div>
           ) : (
             <ul className="space-y-2">
-              {queue.slice(1).map((track, idx) => (
+              {queue.map((track, idx) => (
                 <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded-lg group">
                   <div className="w-8 h-8 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
                     <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
