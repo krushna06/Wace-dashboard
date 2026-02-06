@@ -7,6 +7,7 @@ interface WebSocketMessage {
   guildId?: string;
   data?: any;
   mode?: string;
+  error?: string;
 }
 
 export function usePlayerWebSocket(
@@ -51,7 +52,7 @@ export function usePlayerWebSocket(
             return;
           }
 
-          if (message.type === 'subscribe_success' || (message.type === 'error' && message.error?.includes('Already have connection'))) {
+          if (message.type === 'subscribe_success' || (message.type === 'error' && message.error && message.error.includes('Already have connection'))) {
             return;
           }
 
