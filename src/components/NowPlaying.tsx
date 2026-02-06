@@ -15,6 +15,10 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
 
   useEffect(() => {
     const fetchQueue = async () => {
+      if (!guildId) {
+        setQueue([]);
+        return;
+      }
       try {
         const queueData = await musicApi.getQueue(guildId);
         setQueue(queueData);

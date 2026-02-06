@@ -13,6 +13,7 @@ import { checkIfUserIsDJ } from '@/services/api';
 import Sidebar from '@/components/Sidebar';
 import NowPlaying from '@/components/NowPlaying';
 import SearchBar from '@/components/SearchBar';
+import { usePlayerWebSocket } from '@/hooks/usePlayerWebSocket';
 
 interface Guild {
   id: string;
@@ -52,7 +53,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
       setCurrentTime(state.position);
       setVolume(state.volume);
     } catch (error) {
-      console.error('Failed to fetch player state:', error);
+      setPlayerState(null);
     }
   };
 
@@ -64,6 +65,41 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
       console.error('Failed to fetch playlists:', error);
     }
   };
+
+  const handlePlayerDestroy = () => {
+    setPlayerState(null);
+    setCurrentTime(0);
+  };
+
+  const handlePlayerUpdate = (data: any) => {
+    fetchPlayerState();
+  };
+
+  const handleTrackEnd = (data: any) => {
+    fetchPlayerState();
+  };
+
+  const handleTrackStart = (data: any) => {
+    fetchPlayerState();
+  };
+
+  const handlePlayerPause = () => {
+    setPlayerState(prev => prev ? { ...prev, pause: true } : null);
+  };
+
+  const handlePlayerResume = () => {
+    setPlayerState(prev => prev ? { ...prev, pause: false } : null);
+  };
+
+  usePlayerWebSocket(
+    guildId,
+    handlePlayerDestroy,
+    handlePlayerUpdate,
+    handleTrackEnd,
+    handleTrackStart,
+    handlePlayerPause,
+    handlePlayerResume
+  );
 
   useEffect(() => {
     fetchPlayerState();

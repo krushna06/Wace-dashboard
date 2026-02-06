@@ -48,7 +48,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/players/${guildId}/volume`);
       return data.data;
     } catch (error) {
-      console.error('Error fetching volume:', error);
       throw error;
     }
   },
@@ -57,7 +56,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/players/${guildId}`);
       return data;
     } catch (error) {
-      console.error("Error fetching player state:", error);
       throw error;
     }
   },
@@ -67,7 +65,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/players/${guildId}/current`);
       return data.data;
     } catch (error) {
-      console.error("Error fetching current track:", error);
       throw error;
     }
   },
@@ -77,7 +74,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/players/${guildId}/queue`);
       return data.data;
     } catch (error) {
-      console.error("Error fetching queue:", error);
       throw error;
     }
   },
