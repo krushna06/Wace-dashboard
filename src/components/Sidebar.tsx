@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { checkIfUserIsDJ } from '@/services/api';
-import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2 } from 'lucide-react';
+import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { musicApi } from '@/services/api';
 
@@ -348,6 +348,20 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </Link>
         )}
       </div>
+      {process.env.NEXT_PUBLIC_NODELINK_ENABLED !== 'false' && (
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
+          pathname === '/nodelink' ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+        }`}>
+          <div className="w-6 h-6 flex-shrink-0">
+            <Zap className="w-6 h-6" />
+          </div>
+          {!isCollapsed && (
+            <Link href="/nodelink" className="hover:text-white transition-colors">
+              <span>Nodelink</span>
+            </Link>
+          )}
+        </div>
+      )}
       {guildId && (
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} transition-colors px-3 py-2 rounded-lg ${
           pathname === `/guild/${guildId}/search` ? 'text-white bg-zinc-800' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
