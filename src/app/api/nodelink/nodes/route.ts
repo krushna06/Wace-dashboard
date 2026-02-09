@@ -26,7 +26,7 @@ interface NodelinkStats {
 }
 
 function getNodelinkNodes(): NodelinkNodeConfig[] {
-  const nodesJson = process.env.LAVALINK_NODES;
+  const nodesJson = process.env.LAVALINK_NODES || process.env.NODELINK_NODES;
   
   if (!nodesJson) {
     return [];
@@ -35,7 +35,7 @@ function getNodelinkNodes(): NodelinkNodeConfig[] {
   try {
     return JSON.parse(nodesJson);
   } catch (error) {
-    console.error('Failed to parse LAVALINK_NODES:', error);
+    console.error('Failed to parse LAVALINK_NODES or NODELINK_NODES:', error);
     return [];
   }
 }
@@ -99,6 +99,7 @@ export async function GET() {
           online,
           secure: node.secure || false,
           showDetails: node.showDetails !== false,
+          password: node.showDetails !== false ? node.password : undefined,
           stats,
         };
       })

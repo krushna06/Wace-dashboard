@@ -14,6 +14,7 @@ interface NodelinkNode {
   online: boolean;
   secure: boolean;
   showDetails: boolean;
+  password?: string;
   stats?: {
     playingPlayers: number;
     players: number;
@@ -208,9 +209,9 @@ export default function NodelinkPage() {
                                       {node.showDetails ? 'Public' : 'Private'}
                                     </span>
                                   </div>
-                                  {node.showDetails && (
+                                  {!node.showDetails && node.online && node.stats && (
                                     <div className="text-sm text-zinc-400">
-                                      {node.host}:{node.port}
+                                      Players: {node.stats.playingPlayers}/{node.stats.players}
                                     </div>
                                   )}
                                 </div>
@@ -261,6 +262,12 @@ export default function NodelinkPage() {
                                           {node.online ? 'Online' : 'Offline'}
                                         </div>
                                       </div>
+                                      {node.password && (
+                                        <div className="bg-zinc-800 p-2 rounded text-xs col-span-2">
+                                          <div className="text-zinc-400 mb-1">Password</div>
+                                          <div className="font-mono text-white break-all">{node.password}</div>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
 
