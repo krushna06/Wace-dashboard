@@ -8,6 +8,7 @@ import { checkIfUserIsDJ } from '@/services/api';
 import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { musicApi } from '@/services/api';
+import { useGuilds } from '@/contexts/GuildContext';
 
 interface Guild {
   id: string;
@@ -35,10 +36,9 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
-  const [guilds, setGuilds] = useState<Guild[]>([]);
+  const { mutualGuilds, loading } = useGuilds();
   const [currentGuild, setCurrentGuild] = useState<Guild | null>(null);
   const [showGuildDropdown, setShowGuildDropdown] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
@@ -59,34 +59,11 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   const isGuildsPage = pathname === '/guilds';
 
   useEffect(() => {
-    const fetchGuilds = async () => {
-      if (!session?.accessToken) return;
-      try {
-        const response = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        });
-        if (!response.ok) throw new Error('Failed to fetch guilds');
-        const data = await response.json();
-        setGuilds(data);
-        const current = data.find((guild: Guild) => guild.id === guildId);
-        setCurrentGuild(current);
-      } catch (error) {
-        console.error('Failed to fetch guilds:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGuilds();
-  }, [session?.accessToken, guildId]);
-
-  useEffect(() => {
-    if (guilds.length > 0) {
-      const current = guilds.find((guild: Guild) => guild.id === guildId);
+    if (mutualGuilds.length > 0 && guildId) {
+      const current = mutualGuilds.find((guild: Guild) => guild.id === guildId);
       setCurrentGuild(current || null);
     }
-  }, [guildId, guilds]);
+  }, [guildId, mutualGuilds]);
 
   const handleGuildSelect = async (selectedGuild: Guild) => {
     const userId = session?.user?.id;
@@ -258,7 +235,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
                 </div>
               )}
               <span className="truncate text-sm font-medium">
-                {session?.accessToken ? (currentGuild?.name || 'Select a guild') : 'Select a guild'}
+                {currentGuild?.name || (loading ? 'Loading...' : 'Select a guild')}
               </span>
             </div>
             <ChevronDown className={`w-4 h-4 transition-transform ${showGuildDropdown ? 'rotate-180' : ''}`} />
@@ -267,9 +244,11 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
             <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
               {loading ? (
                 <div className="p-2 text-center text-zinc-400 text-sm">Loading servers...</div>
+              ) : mutualGuilds.length === 0 ? (
+                <div className="p-2 text-center text-zinc-400 text-sm">No mutual servers with bot</div>
               ) : (
                 <div className="py-1">
-                  {guilds.map((guild) => (
+                  {mutualGuilds.map((guild) => (
                     <button
                       key={guild.id}
                       onClick={() => handleGuildSelect(guild)}

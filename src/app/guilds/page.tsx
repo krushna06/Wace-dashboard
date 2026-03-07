@@ -11,6 +11,7 @@ import { checkIfUserIsDJ, musicApi, checkIfUserIsPremium } from '@/services/api'
 import { AppLayout } from '@/components/AppLayout';
 import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 import { SpotlightSearch } from '@/components/SpotlightSearch';
+import { useGuilds } from '@/contexts/GuildContext';
 
 interface Guild {
   id: string;
@@ -24,71 +25,14 @@ export default function GuildsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { isOpen, closeSpotlight, openSpotlight } = useSpotlightSearch();
-  const [guilds, setGuilds] = useState<Guild[]>([]);
-  const [filteredGuilds, setFilteredGuilds] = useState<Guild[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
+  const { mutualGuilds, listeningGuilds, loading } = useGuilds();
   const [error, setError] = useState<string | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const [listeningGuilds, setListeningGuilds] = useState<Guild[]>([]);
-  const [myServers, setMyServers] = useState<Guild[]>([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin');
     }
   }, [status, router]);
-
-  useEffect(() => {
-    const fetchGuilds = async () => {
-      if (!session?.accessToken || !session?.user?.id) return;
-
-      try {
-        const response = await fetch('https://discord.com/api/users/@me/guilds', {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        });
-
-        if (!response.ok) throw new Error('Failed to fetch guilds');
-
-        const data = await response.json();
-        setGuilds(data);
-        const results = await Promise.all(
-          data.map(async (guild: Guild) => {
-            try {
-              const checker = await musicApi.checkUserAndBotInGuild(guild.id, session.user?.id || '');
-              return { guild, ...checker };
-            } catch {
-              return { guild, inGuild: false, inSameVoice: false };
-            }
-          })
-        );
-        const listening = results.filter(r => r.inGuild && r.inSameVoice).map(r => r.guild);
-        const servers = results.filter(r => r.inGuild).map(r => r.guild);
-        setListeningGuilds(listening);
-        setMyServers(servers);
-        setFilteredGuilds([...listening, ...servers]);
-      } catch (error) {
-        console.error('Failed to fetch guilds:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGuilds();
-  }, [session?.accessToken, session?.user?.id]);
-
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredGuilds(guilds);
-    } else {
-      const filtered = guilds.filter(guild =>
-        guild.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredGuilds(filtered);
-    }
-  }, [searchQuery, guilds]);
 
   const handleGuildClick = async (guildId: string) => {
     setError(null);
@@ -177,7 +121,7 @@ export default function GuildsPage() {
           )}
           <h1 className="text-2xl font-bold mb-4">My servers</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {myServers.map((guild) => (
+              {mutualGuilds.map((guild) => (
                 <div key={guild.id} className="bg-zinc-900 rounded-lg overflow-hidden flex flex-col p-0 max-w-sm">
                   <div className="relative h-20 w-full">
                     <img

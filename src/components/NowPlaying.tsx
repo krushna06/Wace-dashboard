@@ -51,7 +51,7 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
   };
 
   return (
-    <div className="w-80 bg-[#121212] p-6 flex flex-col gap-6">
+    <div className="w-80 bg-[#121212] p-6 pb-28 flex flex-col gap-6">
       <h2 className="text-zinc-500 uppercase text-sm font-bold mb-2">Now Playing</h2>
       {playerState?.current ? (
         <div className="flex flex-col gap-4">
