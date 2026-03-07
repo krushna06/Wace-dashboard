@@ -166,6 +166,18 @@ export const musicApi = {
     }
   },
 
+  async skipToTrack(guildId: string, position: number): Promise<void> {
+    try {
+      await api.patch(`/v1/players/${guildId}`, {
+        skipTo: position,
+      });
+      console.log("Skipped to position:", position);
+    } catch (error) {
+      console.error("Error skipping to track:", error);
+      throw error;
+    }
+  },
+
   async toggleLoop(guildId: string, mode: "queue" | "song" | "none"): Promise<void> {
     try {
       const { data } = await api.patch(`/v1/players/${guildId}`, {

@@ -28,7 +28,7 @@ export function QueueList({ guildId }: QueueListProps) {
 
   const handlePlayTrack = async (track: Track, index: number) => {
     try {
-      await musicApi.addTrack(guildId, `-${index}`);
+      await musicApi.skipToTrack(guildId, index);
     } catch (error) {
       console.error('Failed to play track:', error);
     }
