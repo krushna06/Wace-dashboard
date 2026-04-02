@@ -449,87 +449,40 @@ export interface TrendingTrack {
 }
 
 export const spotifyApi = {
-  async getAccessToken(): Promise<string> {
+  async getTrendingSongs(): Promise<TrendingTrack[]> {
     try {
-      const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
-      const clientSecret = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET;
-
-      if (!clientId || !clientSecret) {
-        throw new Error('Spotify credentials not configured');
-      }
-
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}`
-        },
-        body: 'grant_type=client_credentials'
-      });
+      const response = await fetch(
+        'https://itunes.apple.com/us/rss/topsongs/limit=48/json'
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to get access token: ${response.status}`);
+        throw new Error(`Failed to fetch iTunes trending tracks: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.access_token;
-    } catch (error) {
-      console.error('Error getting Spotify access token:', error);
-      throw error;
-    }
-  },
 
-  async getTrendingSongs(): Promise<TrendingTrack[]> {
-    try {
-      const accessToken = await this.getAccessToken();
-      console.log('Got access token:', accessToken ? 'Success' : 'Failed');
+      if (data.feed?.entry) {
+        const tracks = data.feed.entry.map((entry: any) => {
+          const title = entry['im:name']?.label || 'Unknown';
+          const artist = entry['im:artist']?.label || 'Unknown Artist';
+          const image = entry['im:image']?.[entry['im:image'].length - 1]?.label || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center';
+          const url = entry.link?.attributes?.href || '';
 
-      const testResponse = await fetch('https://api.spotify.com/v1/browse/categories?limit=1', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Test API call status:', testResponse.status);
-      if (!testResponse.ok) {
-        const testError = await testResponse.text();
-        console.error('Test API error:', testError);
-        throw new Error(`Spotify API test failed: ${testResponse.status}`);
-      }
-
-      const newReleasesResponse = await fetch('https://api.spotify.com/v1/browse/new-releases?limit=48&country=US', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!newReleasesResponse.ok) {
-        const errorText = await newReleasesResponse.text();
-        console.error('New releases response error:', errorText);
-        throw new Error(`Failed to fetch Spotify new releases: ${newReleasesResponse.status}`);
-      }
-
-      const newReleasesData = await newReleasesResponse.json();
-      
-      if (newReleasesData.albums?.items) {
-        const tracks = newReleasesData.albums.items.map((album: any) => {
           return {
-            id: album.id,
-            title: album.name,
-            artist: album.artists.map((artist: any) => artist.name).join(', '),
-            image: album.images?.[0]?.url || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop&crop=center',
-            url: album.external_urls?.spotify
+            id: entry.id?.attributes?.['im:id'] || `${artist}-${title}`,
+            title,
+            artist,
+            image,
+            url
           };
         });
 
         return tracks;
       } else {
-        throw new Error('No new releases found');
+        throw new Error('No trending tracks found');
       }
     } catch (error) {
-      console.error('Error fetching trending songs:', error);
+      console.error('Error fetching trending songs from iTunes:', error);
       throw error;
     }
   }
