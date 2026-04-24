@@ -6,24 +6,6 @@ import { signIn, useSession } from 'next-auth/react'
 
 function LandingScripts() {
   useEffect(() => {
-    const cssFiles = [
-      '/landing/css/bootstrap.min.css',
-      '/landing/css/fontawesome-all.min.css',
-      '/landing/css/feature.css',
-      '/landing/css/animation.css',
-      '/landing/css/slick.css',
-      '/landing/css/slick-theme.css',
-      '/landing/css/bootstrap-select.min.css',
-      '/landing/css/prism.css',
-      '/landing/css/style.css',
-    ]
-    const links: HTMLLinkElement[] = cssFiles.map((href) => {
-      const el = document.createElement('link')
-      el.rel = 'stylesheet'
-      el.href = href
-      document.head.appendChild(el)
-      return el
-    })
 
     const scripts = [
       '/landing/js/modernizr.min.js',
@@ -59,10 +41,7 @@ function LandingScripts() {
           })
       )
     })
-    return () => {
-      links.forEach((l) => l.parentNode?.removeChild(l))
-      loaded.forEach((s) => s.parentNode?.removeChild(s))
-    }
+    return () => { loaded.forEach((s) => s.parentNode?.removeChild(s)) }
   }, [])
   return null
 }
@@ -127,19 +106,13 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                   <a className="rainbow-gradient-btn" target="_blank" rel="noreferrer" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">
                     <span>Invite</span>
                   </a>
-                  {session ? (
-                    <Link className="btn-default" href="/guilds" style={{ padding: '8px 16px', fontSize: 14 }}>
-                      Dashboard
-                    </Link>
-                  ) : (
-                    <button
-                      className="btn-default"
-                      onClick={() => signIn('discord', { callbackUrl: '/guilds' })}
-                      style={{ padding: '8px 16px', fontSize: 14, cursor: 'pointer', border: 'none' }}
-                    >
-                      Login
-                    </button>
-                  )}
+                  <button
+                    className="btn-default"
+                    onClick={() => signIn('discord', { callbackUrl: '/guilds' })}
+                    style={{ padding: '8px 16px', fontSize: 14, cursor: 'pointer', border: 'none', display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    {session ? 'Dashboard' : 'Login'}
+                  </button>
                 </div>
                 <div className="mobile-menu-bar ml--5 d-flex justify-content-end d-lg-none">
                   <div className="hamberger">
