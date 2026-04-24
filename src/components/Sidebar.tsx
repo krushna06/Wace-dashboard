@@ -338,8 +338,8 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
         )}
       </nav>
 
-      {guildId && !isGuildsPage && !isAdminPage && pathname !== '/stats' && (
-        <div className="px-2 pb-3 flex-shrink-0">
+      {guildId && !isGuildsPage && !isAdminPage && (
+        <div className="px-2 pb-3 flex-shrink-0" style={{ paddingBottom: 'calc(0.75rem + 96px)' }}>
           <Link
             href={`/guild/${guildId}/settings`}
             className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'} px-3 py-2 rounded-lg transition-all text-sm font-medium text-[#BCC3D7] hover:text-white`}

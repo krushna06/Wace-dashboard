@@ -63,15 +63,15 @@ export default function GuildSettingsPage({ params }: { params: { id: string } }
             </div>
           </div>
           {/* Language Card */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+          <div className="rounded-xl p-6 mb-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h3 className="font-semibold text-lg text-white">Language</h3>
-                <p className="text-zinc-400 text-sm">Default language for public dashboard.</p>
+                <p className="text-[#BCC3D7] text-sm">Default language for public dashboard.</p>
               </div>
               <div className="relative guild-selector w-56" ref={dropdownRef}>
                 {loading ? (
-                  <div className="flex items-center gap-2 text-zinc-400 bg-zinc-800 rounded-lg p-2">
+                  <div className="flex items-center gap-2 text-zinc-400 rounded-lg p-2" style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
                     <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
                     <span className="text-sm">Loading...</span>
                   </div>
@@ -79,7 +79,8 @@ export default function GuildSettingsPage({ params }: { params: { id: string } }
                   <>
                     <button
                       type="button"
-                      className="w-full flex items-center justify-between p-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors text-left text-sm font-medium text-white"
+                      className="w-full flex items-center justify-between p-2 rounded-lg hover:opacity-80 transition-opacity text-left text-sm font-medium text-white"
+                      style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
                       onClick={() => setDropdownOpen((v) => !v)}
                       aria-haspopup="listbox"
                       aria-expanded={dropdownOpen}
@@ -90,7 +91,7 @@ export default function GuildSettingsPage({ params }: { params: { id: string } }
                       <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {dropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto" style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
                         <div className="py-1">
                           {available.map((lang) => (
                             <button
@@ -116,7 +117,7 @@ export default function GuildSettingsPage({ params }: { params: { id: string } }
                               }}
                             >
                               <span className="truncate text-sm">{LANGUAGE_NAMES[lang] || lang.toUpperCase()} ({lang.toUpperCase()})</span>
-                              {lang === language && <Check className="w-4 h-4 text-blue-500 ml-auto" />}
+                              {lang === language && <Check className="w-4 h-4 ml-auto" style={{ color: 'var(--color-primary)' }} />}
                             </button>
                           ))}
                         </div>

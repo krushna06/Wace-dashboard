@@ -80,3 +80,23 @@ body {
 .scrollbar-custom::-webkit-scrollbar-thumb { background: rgba(128,90,245,0.3); border-radius: 3px; }
 
 .preloader { display: none !important; }
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #52525b;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #52525b transparent;
+}
