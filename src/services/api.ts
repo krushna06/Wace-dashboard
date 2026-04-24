@@ -770,3 +770,16 @@ export interface AdminCommandCategory {
   category: string
   commands: AdminCommand[]
 }
+
+export interface BotStats {
+  uptime: number
+  guilds: number
+  registeredUsers: number
+  activeVCs: number
+  songsPlayed: number
+}
+
+export async function getBotStats(): Promise<BotStats> {
+  const { data } = await api.get('/v1/stats/bot')
+  return data
+}
