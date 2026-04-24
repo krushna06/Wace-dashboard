@@ -99,6 +99,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
               <nav className="mainmenu-nav d-none d-lg-flex justify-content-center">
                 <ul className="mainmenu">
                   <li><Link href="/">Home</Link></li>
+                  <li><Link href="/status">Status</Link></li>
                   <li><Link href="/pricing">Pricing</Link></li>
                   <li><Link href="/contact">Contact</Link></li>
                 </ul>
@@ -146,6 +147,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
           <div className="content">
             <ul className="mainmenu">
               <li><Link href="/">Home</Link></li>
+              <li><Link href="/status">Status</Link></li>
               <li><Link href="/pricing">Pricing</Link></li>
               <li><Link href="/contact">Contact</Link></li>
             </ul>
@@ -178,6 +180,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                     <div className="inner">
                       <ul className="footer-link link-hover">
                         <li><Link href="/pricing">Pricing</Link></li>
+                        <li><Link href="/status">Status</Link></li>
                         <li><Link href="/contact">Contact</Link></li>
                         <li><a href="https://discord.gg/wacebot">Discord</a></li>
                       </ul>
@@ -219,6 +222,10 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
             </div>
             <div className="col-lg-6 col-md-4 col-sm-12 col-12">
               <div className="copyright-right text-center text-lg-end">
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#3EB75E', display: 'inline-block' }}></span>
+                  <Link href="/status" style={{ color: '#BCC3D7', fontSize: 12 }}>All Systems Operational</Link>
+                </div>
                 <p className="copyright-text">
                   Copyright &copy; {new Date().getFullYear()} <Link href="/" className="btn-read-more"><span>Wace</span></Link>
                 </p>
