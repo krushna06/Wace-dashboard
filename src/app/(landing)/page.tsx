@@ -1,9 +1,12 @@
-﻿import LandingLayout from '@/components/landing/LandingLayout'
+'use client'
+
+import LandingLayout from '@/components/landing/LandingLayout'
 import RotatingText from '@/components/landing/RotatingText'
 
 export default function Home() {
   return (
     <LandingLayout>
+      {/* Hero */}
       <div className="slider-area slider-style-1 variation-default slider-bg-image bg-banner1 slider-bg-shape" data-black-overlay="1">
         <div className="container">
           <div className="row justify-content-center">
@@ -25,6 +28,7 @@ export default function Home() {
         <br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
       </div>
 
+      {/* Features Tabs */}
       <div className="rainbow-service-area rainbow-section-gap">
         <div className="container">
           <div className="row">
@@ -156,6 +160,68 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="rainbow-service-area rainbow-section-gap">
+        <div className="container">
+          <div className="row">
+            <div className="col-lg-12">
+              <div className="section-title text-center pb--60" data-sal="slide-up" data-sal-duration="700" data-sal-delay="100">
+                <h4 className="subtitle"><span className="theme-gradient"># Why Wace</span></h4>
+                <h2 className="title mb--0">Everything you need in one bot.</h2>
+              </div>
+            </div>
+          </div>
+          <div className="row row--15">
+            {[
+              { icon: 'fa-music', title: 'High Quality Audio', desc: 'Crystal clear audio streaming with no lag or buffering, powered by Lavalink nodes.' },
+              { icon: 'fa-list-music', title: 'Smart Queue', desc: 'Manage your queue with ease - skip, shuffle, insert, remove and save as a playlist.' },
+              { icon: 'fa-waveform-lines', title: 'Audio Filters', desc: 'Bassboost, nightcore, vaporwave, 3D and 20+ more filters to enhance your listening.' },
+              { icon: 'fa-clock', title: '24/7 Mode', desc: 'Keep the music going around the clock. Wace auto-rejoins if kicked from the channel.' },
+              { icon: 'fa-chart-bar', title: 'Detailed Stats', desc: 'Track songs played, top users, top tracks and more with the built-in stats dashboard.' },
+              { icon: 'fa-star', title: 'Premium System', desc: 'Unlock exclusive commands and features with affordable premium plans for users and guilds.' },
+            ].map(({ icon, title, desc }) => (
+              <div key={title} className="col-lg-4 col-md-6 col-12 mt--30" data-sal="slide-up" data-sal-duration="500">
+                <div style={{ height: '100%', padding: '2rem', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                  <div className="icon" style={{ marginBottom: 16 }}>
+                    <i className={'fa-sharp fa-regular ' + icon} style={{ fontSize: 32, background: 'linear-gradient(135deg,#805AF5,#CD99FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
+                  </div>
+                  <div className="content">
+                    <h4 className="title" style={{ color: '#fff', marginBottom: 8 }}>{title}</h4>
+                    <p style={{ color: '#BCC3D7', margin: 0, fontSize: 14, lineHeight: 1.7 }}>{desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Platforms */}
+      <div className="rainbow-section-gap">
+        <div className="container">
+          <div className="section-title text-center pb--40" data-sal="slide-up" data-sal-duration="700">
+            <h4 className="subtitle"><span className="theme-gradient"># Sources</span></h4>
+            <h2 className="title mb--0">Play from anywhere.</h2>
+          </div>
+          <div className="row justify-content-center align-items-center row--20">
+            {[
+              { icon: 'fa-sharp fa-regular fa-link', label: 'Direct Links', color: '#805AF5' },
+              { icon: 'fa-sharp fa-regular fa-radio', label: 'Radio', color: '#CD99FF' },
+              { icon: 'fa-sharp fa-regular fa-file-audio', label: 'Files', color: '#A238FF' },
+              { icon: 'fa-sharp fa-regular fa-list-music', label: 'Playlists', color: '#805AF5' },
+              { icon: 'fa-sharp fa-regular fa-magnifying-glass', label: 'Search', color: '#CD99FF' },
+            ].map(({ icon, label, color }) => (
+              <div key={label} className="col-lg-2 col-md-3 col-4 mt--20" data-sal="slide-up" data-sal-duration="400">
+                <div className="text-center" style={{ padding: '1.5rem 1rem', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <i className={icon} style={{ fontSize: 36, color, display: 'block', marginBottom: 10 }}></i>
+                  <p style={{ color: '#BCC3D7', margin: 0, fontSize: 13 }}>{label}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Integration */}
       <div className="rainbow-collobration-area rainbow-section-gap-big">
         <div className="container">
           <div className="row">
@@ -180,6 +246,7 @@ export default function Home() {
         </div>
       </div>
 
+      {/* CTA */}
       <div className="rainbow-rn-cta">
         <div className="container">
           <div className="row row--0 align-items-center content-wrapper">
