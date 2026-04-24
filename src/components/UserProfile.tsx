@@ -1,12 +1,22 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
-import { ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut, Shield } from 'lucide-react';
+import { adminApi } from '@/services/api';
+import Link from 'next/link';
 
 export function UserProfile() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.user?.id) return;
+    adminApi.getMe(session.user.id)
+      .then(d => setIsAdmin(d.authorized))
+      .catch(() => setIsAdmin(false));
+  }, [status, session?.user?.id]);
 
   if (!session?.user) return null;
 
@@ -40,6 +50,16 @@ export function UserProfile() {
               </div>
             </div>
           </div>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsOpen(false)}
+              className="w-full flex items-center gap-2 px-4 py-3 text-sm text-purple-400 hover:bg-zinc-800 transition-colors"
+            >
+              <Shield className="w-4 h-4" />
+              Admin Panel
+            </Link>
+          )}
           <button
             onClick={() => signOut()}
             className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:bg-zinc-800 transition-colors"
@@ -51,4 +71,4 @@ export function UserProfile() {
       )}
     </div>
   );
-} 
+}

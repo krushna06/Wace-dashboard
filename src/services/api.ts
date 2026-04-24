@@ -669,3 +669,77 @@ export async function getDiscordUserInfo(userId: string): Promise<DiscordUserInf
     throw new Error(error?.message || 'Failed to fetch user info');
   }
 }
+
+// ── Admin API ────────────────────────────────────────────────────────────────
+
+export interface AdminMe {
+  authorized: boolean;
+  role: 'owner' | 'admin';
+  userId: string;
+}
+
+export interface BlacklistEntry {
+  id: string;
+  type: 'user' | 'guild';
+  reason?: string;
+  blacklistedAt?: number;
+  blacklistedBy?: string;
+}
+
+export interface PremiumKey {
+  code: string;
+  plan: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'lifetime';
+  createdAt?: string;
+}
+
+export interface PremiumUser {
+  id: string
+  userId?: string
+  isPremium?: boolean
+  plan?: string
+  redeemedBy?: { id?: string; username?: string; globalName?: string }
+  redeemedAt?: number
+  expiresAt?: string | number | null
+  expired?: boolean
+}
+
+export const adminApi = {
+  async getMe(userId: string): Promise<AdminMe> {
+    const { data } = await api.get('/v1/admin/me', { headers: { 'x-user-id': userId } });
+    return data;
+  },
+
+  async getBlacklist(userId: string): Promise<BlacklistEntry[]> {
+    const { data } = await api.get('/v1/admin/blacklist', { headers: { 'x-user-id': userId } });
+    return data;
+  },
+  async addBlacklist(userId: string, entry: { id: string; type: 'user' | 'guild'; reason?: string }): Promise<void> {
+    await api.post('/v1/admin/blacklist', entry, { headers: { 'x-user-id': userId } });
+  },
+  async removeBlacklist(userId: string, id: string): Promise<void> {
+    await api.delete(`/v1/admin/blacklist/${id}`, { headers: { 'x-user-id': userId } });
+  },
+
+  async getKeys(userId: string): Promise<PremiumKey[]> {
+    const { data } = await api.get('/v1/admin/premium/keys', { headers: { 'x-user-id': userId } });
+    return data;
+  },
+  async generateKeys(userId: string, plan: PremiumKey['plan'], amount?: number): Promise<PremiumKey[]> {
+    const { data } = await api.post('/v1/admin/premium/keys', { plan, amount }, { headers: { 'x-user-id': userId } });
+    return data;
+  },
+  async deleteKey(userId: string, code: string): Promise<void> {
+    await api.delete(`/v1/admin/premium/keys/${code}`, { headers: { 'x-user-id': userId } });
+  },
+
+  async getPremiumUsers(userId: string): Promise<PremiumUser[]> {
+    const { data } = await api.get('/v1/admin/premium/users', { headers: { 'x-user-id': userId } });
+    return data;
+  },
+  async revokePremium(userId: string, targetId: string): Promise<void> {
+    await api.delete(`/v1/admin/premium/users/${targetId}`, { headers: { 'x-user-id': userId } });
+  },
+  async updatePremium(userId: string, targetId: string, body: { plan?: string; expiresAt?: string }): Promise<void> {
+    await api.patch(`/v1/admin/premium/users/${targetId}`, body, { headers: { 'x-user-id': userId } });
+  },
+};

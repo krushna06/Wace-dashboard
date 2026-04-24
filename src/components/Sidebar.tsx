@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { checkIfUserIsDJ } from '@/services/api';
-import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2, Zap } from 'lucide-react';
+import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { musicApi } from '@/services/api';
 import { useGuilds } from '@/contexts/GuildContext';
@@ -57,6 +57,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   const [isClosingConfirmDelete, setIsClosingConfirmDelete] = useState(false);
 
   const isGuildsPage = pathname === '/guilds';
+  const isAdminPage = pathname === '/admin';
 
   useEffect(() => {
     if (mutualGuilds.length > 0 && guildId) {
@@ -293,12 +294,6 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           <BarChart2 className="w-5 h-5 flex-shrink-0" />
           {!isCollapsed && <span className="truncate">Stats</span>}
         </Link>
-        {process.env.NEXT_PUBLIC_NODELINK_ENABLED !== 'false' && (
-          <Link href="/nodelink" {...navItem(pathname === '/nodelink')}>
-            <Zap className="w-5 h-5 flex-shrink-0" />
-            {!isCollapsed && <span className="truncate">Nodelink</span>}
-          </Link>
-        )}
         {guildId && (
           <button onClick={onOpenSpotlight} {...navItem(pathname === `/guild/${guildId}/search`)}>
             <Search className="w-5 h-5 flex-shrink-0" />
@@ -306,7 +301,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
           </button>
         )}
 
-        {!isCollapsed && !isGuildsPage && (
+        {!isCollapsed && !isGuildsPage && !isAdminPage && (
           <>
             <hr style={{ borderColor: 'var(--color-border)' }} className="my-2" />
             <button
@@ -343,7 +338,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
         )}
       </nav>
 
-      {guildId && !isGuildsPage && pathname !== '/stats' && (
+      {guildId && !isGuildsPage && !isAdminPage && pathname !== '/stats' && (
         <div className="px-2 pb-3 flex-shrink-0">
           <Link
             href={`/guild/${guildId}/settings`}

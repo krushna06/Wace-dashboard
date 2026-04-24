@@ -12,15 +12,17 @@ interface SearchBarProps {
 const SearchBar: React.FC<SearchBarProps> = ({ pathname, guildSearchQuery, setGuildSearchQuery, guildSearchInputRef, onOpenSpotlight }) => {
   return (
     <div className="flex items-center max-w-4xl w-full">
-      {pathname === '/guilds' ? (
-        <input
-          ref={guildSearchInputRef}
-          type="text"
-          value={guildSearchQuery}
-          onChange={e => setGuildSearchQuery(e.target.value)}
-          placeholder="Search for a server..."
-          className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-zinc-700 hover:bg-zinc-700 transition-colors"
-        />
+      {pathname === '/guilds' || pathname === '/admin' ? (
+        pathname === '/guilds' ? (
+          <input
+            ref={guildSearchInputRef}
+            type="text"
+            value={guildSearchQuery}
+            onChange={e => setGuildSearchQuery(e.target.value)}
+            placeholder="Search for a server..."
+            className="w-full bg-zinc-800 text-zinc-400 placeholder-zinc-400 px-4 py-2 rounded-lg text-left focus:outline-none focus:ring-2 focus:ring-zinc-700 hover:bg-zinc-700 transition-colors"
+          />
+        ) : null
       ) : (
         <button
           onClick={onOpenSpotlight}
