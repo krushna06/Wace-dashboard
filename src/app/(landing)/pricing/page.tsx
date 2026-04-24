@@ -1,6 +1,19 @@
+'use client'
+
+import { useState } from 'react'
 import LandingLayout from '@/components/landing/LandingLayout'
 
+const faqs = [
+  { q: 'What is the price for the Premium plan?', a: 'The Premium plan costs $3 Per Month.' },
+  { q: 'What features are included in the Premium plan?', a: 'Playlists, personalized recommendations, enhanced queue management, audio effects, and priority support.' },
+  { q: 'What is the price for the Wace plan?', a: 'The Wace plan costs $5 Per Month.' },
+  { q: 'Is there a limited offer available?', a: 'Yes, both the Premium and Wace plans have a limited offer available.' },
+  { q: 'How can I get started with a plan?', a: 'Click the "Get Started" button on the respective plan.' },
+  { q: 'What is the difference between the Premium and Wace plans?', a: 'The main difference is the price. Premium is $3/month and Wace is $5/month.' },
+]
+
 export default function PricingPage() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0)
   return (
     <LandingLayout title="Pricing">
       <div className="main-content">
@@ -150,28 +163,24 @@ export default function PricingPage() {
                     </div>
                   </div>
                   <div className="col-lg-12 col-xl-7 col-12">
-                    <div className="rainbow-accordion-style rainbow-accordion-02 accordion">
-                      <div className="accordion" id="accordionExampleb">
-                        {[
-                          { id: 'Five', q: 'What is the price for the Premium plan?', a: 'The Premium plan costs $3 Per Month.', open: true },
-                          { id: 'Six', q: 'What features are included in the Premium plan?', a: 'Playlists, personalized recommendations, enhanced queue management, audio effects, and priority support.' },
-                          { id: 'Seven', q: 'What is the price for the Wace plan?', a: 'The Wace plan costs $5 Per Month.' },
-                          { id: 'Eight', q: 'Is there a limited offer available?', a: 'Yes, both the Premium and Wace plans have a limited offer available.' },
-                          { id: 'Nine', q: 'How can I get started with a plan?', a: 'Click the "Get Started" button on the respective plan.' },
-                          { id: 'Ten', q: 'What is the difference between the Premium and Wace plans?', a: 'The main difference is the price. Premium is $3/month and Wace is $5/month.' },
-                        ].map(({ id, q, a, open }) => (
-                          <div key={id} className="accordion-item card">
-                            <h2 className="accordion-header card-header" id={`heading${id}`}>
-                              <button className={`accordion-button${open ? '' : ' collapsed'}`} type="button" data-bs-toggle="collapse" data-bs-target={`#collapse${id}`} aria-expanded={open ? 'true' : 'false'} aria-controls={`collapse${id}`}>
-                                {q}
-                              </button>
-                            </h2>
-                            <div id={`collapse${id}`} className={`accordion-collapse collapse${open ? ' show' : ''}`} aria-labelledby={`heading${id}`} data-bs-parent="#accordionExampleb">
-                              <div className="accordion-body card-body">{a}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="rainbow-accordion-style rainbow-accordion-02">
+                      {faqs.map(({ q, a }, i) => (
+                        <div key={i} className="accordion-item card" style={{ marginBottom: 8 }}>
+                          <h2 className="accordion-header card-header" style={{ margin: 0 }}>
+                            <button
+                              className={`accordion-button${openIndex === i ? '' : ' collapsed'}`}
+                              type="button"
+                              onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                              aria-expanded={openIndex === i}
+                            >
+                              {q}
+                            </button>
+                          </h2>
+                          {openIndex === i && (
+                            <div className="accordion-body card-body">{a}</div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
