@@ -100,3 +100,32 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #52525b transparent;
 }
+
+@keyframes lyrics-fs-enter {
+  0%   { opacity: 0; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes lyrics-fs-exit {
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.04); }
+}
+.animate-lyrics-fs-enter { animation: lyrics-fs-enter 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
+.animate-lyrics-fs-exit  { animation: lyrics-fs-exit  0.3s  cubic-bezier(0.22,1,0.36,1) forwards; }
+
+@keyframes lyrics-art-enter {
+  0%   { opacity: 0; transform: translateY(24px) scale(0.93); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
+}
+.animate-lyrics-art-enter { animation: lyrics-art-enter 0.55s 0.1s cubic-bezier(0.22,1,0.36,1) both; }
+
+@keyframes lyrics-text-enter {
+  0%   { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.animate-lyrics-text-enter { animation: lyrics-text-enter 0.55s 0.18s cubic-bezier(0.22,1,0.36,1) both; }
+
+@keyframes lyrics-bg-pulse {
+  0%, 100% { opacity: 0.18; }
+  50%       { opacity: 0.26; }
+}
+.animate-lyrics-bg-pulse { animation: lyrics-bg-pulse 8s ease-in-out infinite; }

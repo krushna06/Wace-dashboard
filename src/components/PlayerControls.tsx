@@ -1,6 +1,6 @@
 'use client'
 
-import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX, Filter, X, ScrollText } from 'lucide-react';
+import { SkipBack, SkipForward, Play, Pause, Repeat, Shuffle, Volume2, VolumeX, Filter, X, ScrollText, Maximize2, Minimize2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { musicApi, type PlayerState } from '@/services/api';
 import { toast } from 'sonner';
@@ -38,6 +38,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const [showLyricsModal, setShowLyricsModal] = useState(false);
   const [lyrics, setLyrics] = useState<string | null>(null);
   const [isClosingLyrics, setIsClosingLyrics] = useState(false);
+  const [isLyricsFullscreen, setIsLyricsFullscreen] = useState(false);
 
   React.useEffect(() => {
     async function fetchVolume() {
@@ -559,24 +560,114 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
         )}
       </div>
       {showLyricsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className={`fixed inset-0 z-50 flex items-center justify-center ${isLyricsFullscreen ? '' : ''}`}>
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={handleCloseLyrics}
+            onClick={isLyricsFullscreen ? undefined : handleCloseLyrics}
           />
-          <div
-            className={`relative bg-zinc-900 rounded-lg shadow-2xl p-8 max-w-2xl w-full mx-4 z-10 text-white ${isClosingLyrics ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}`}
-            style={{ whiteSpace: 'pre-line', maxHeight: 600, overflowY: 'auto' }}
-          >
-            <button
-              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
-              onClick={handleCloseLyrics}
+          {isLyricsFullscreen ? (
+            <div
+              className={`relative w-full h-full flex z-10 ${isClosingLyrics ? 'animate-lyrics-fs-exit' : 'animate-lyrics-fs-enter'}`}
+              style={{ background: '#0a0812' }}
             >
-              Close
-            </button>
-            <h2 className="text-2xl font-bold mb-4">Lyrics</h2>
-            {lyrics}
-          </div>
+              {playerState?.current?.thumbnail && (
+                <div
+                  className="absolute inset-0 animate-lyrics-bg-pulse"
+                  style={{
+                    backgroundImage: `url(${playerState.current.thumbnail})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    filter: 'blur(80px) saturate(1.4)',
+                    transform: 'scale(1.15)',
+                  }}
+                />
+              )}
+              <div className="absolute inset-0" style={{ background: 'rgba(8,5,18,0.72)' }} />
+
+              <div className="relative flex flex-col items-center justify-center w-2/5 p-12 gap-6">
+                <div className="animate-lyrics-art-enter flex flex-col items-center gap-6">
+                  {playerState?.current?.thumbnail ? (
+                    <img
+                      src={playerState.current.thumbnail}
+                      alt={playerState.current.title}
+                      className="w-72 h-72 rounded-3xl object-cover"
+                      style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06)' }}
+                    />
+                  ) : (
+                    <div className="w-72 h-72 rounded-3xl flex items-center justify-center" style={{ background: 'var(--color-surface-2)' }}>
+                      <ScrollText className="w-16 h-16 text-zinc-600" />
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <p className="text-white text-2xl font-bold truncate max-w-xs leading-tight">
+                      {playerState?.current?.title ?? 'Unknown'}
+                    </p>
+                    <p className="text-zinc-400 text-lg mt-1 truncate max-w-xs">
+                      {playerState?.current?.author ?? ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative self-stretch my-16 w-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
+
+              <div className="relative flex flex-col flex-1 p-12 pt-20 overflow-hidden animate-lyrics-text-enter">
+                <div
+                  className="flex-1 overflow-y-auto pr-4"
+                  style={{ whiteSpace: 'pre-line', lineHeight: '2.1', fontSize: '1.15rem', color: '#e4e6ea' }}
+                >
+                  {lyrics}
+                </div>
+              </div>
+
+              <div className="absolute top-5 right-5 flex items-center gap-2">
+                <button
+                  onClick={() => setIsLyricsFullscreen(false)}
+                  className="text-zinc-400 hover:text-white transition-colors p-2 rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
+                  title="Exit fullscreen"
+                >
+                  <Minimize2 className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={handleCloseLyrics}
+                  className="text-zinc-400 hover:text-white transition-colors p-2 rounded-xl"
+                  style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
+                  title="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              className={`relative rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4 z-10 text-white ${isClosingLyrics ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'}`}
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', whiteSpace: 'pre-line', maxHeight: 600, overflowY: 'auto' }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold">Lyrics</h2>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="text-zinc-400 hover:text-white transition-colors p-1.5 rounded-lg"
+                    style={{ background: 'var(--color-surface-2)' }}
+                    onClick={() => setIsLyricsFullscreen(true)}
+                    title="Fullscreen"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    className="text-zinc-400 hover:text-white transition-colors p-1.5 rounded-lg"
+                    style={{ background: 'var(--color-surface-2)' }}
+                    onClick={handleCloseLyrics}
+                    title="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              {lyrics}
+            </div>
+          )}
         </div>
       )}
     </>
