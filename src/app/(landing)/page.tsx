@@ -1,4 +1,5 @@
 ﻿import LandingLayout from '@/components/landing/LandingLayout'
+import RotatingText from '@/components/landing/RotatingText'
 
 export default function Home() {
   return (
@@ -12,13 +13,7 @@ export default function Home() {
                 <h1 className="title display-one">Play music from
                   <br />
                   <span className="header-caption">
-                    <span className="cd-headline rotate-1">
-                      <span className="cd-words-wrapper" style={{ width: 221 }}>
-                        <b className="theme-gradient is-visible">Soundcloud</b>
-                        <b className="theme-gradient is-hidden">Deezer</b>
-                        <b className="theme-gradient is-hidden">Spotify</b>
-                      </span>
-                    </span>
+                    <RotatingText />
                   </span>
                 </h1>
                 <p className="description">Bring rhythm and melody to your community
