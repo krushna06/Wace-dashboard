@@ -18,7 +18,7 @@ export default function ContactPage() {
       description: (form.elements.namedItem('bio1') as HTMLTextAreaElement).value,
     }
 
-    const webhookUrl = 'https://discord.com/api/webhooks/1248159215646933033/sQxCVXfpZORj6BELPRY9FxpgwAeW-isGkhi8sN4qUwS2vLGwGMYVxTeDW82HsUTXCUaM'
+    const webhookUrl = process.env.NEXT_PUBLIC_CONTACT_WEBHOOK_URL!
     const payload = {
       content: '<@853620650592567304>',
       embeds: [{

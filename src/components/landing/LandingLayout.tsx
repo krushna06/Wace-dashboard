@@ -4,8 +4,12 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { signIn, useSession } from 'next-auth/react'
 
+let scriptsLoaded = false
+
 function LandingScripts() {
   useEffect(() => {
+    if (scriptsLoaded) return
+    scriptsLoaded = true
 
     const scripts = [
       '/landing/js/modernizr.min.js',
