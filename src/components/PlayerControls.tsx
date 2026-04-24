@@ -308,7 +308,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
   return (
     <>
-      <div className="h-24 bg-zinc-950 border-t border-zinc-900 p-4">
+      <div className="h-24 border-t p-4" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-center w-full h-full">
           <div className="flex items-center gap-4 w-64 min-w-0 justify-start">
             {playerState?.current ? (
@@ -351,7 +351,8 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
               />
               <button
                 onClick={handlePlayPause}
-                className="w-8 h-8 flex items-center justify-center bg-white rounded-full text-black hover:scale-105 transition-all"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-black hover:scale-105 transition-all"
+                style={{ background: 'linear-gradient(135deg,var(--color-primary),var(--color-secondary))' }}
               >
                 {playerState?.pause ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
               </button>
@@ -373,11 +374,12 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                 onClick={handleSeek}
               >
                 <div
-                  className="h-full bg-white rounded-full group-hover:bg-green-500 transition-colors"
+                  className="h-full rounded-full transition-colors"
                   style={{ 
                     width: playerState?.current 
                       ? `${(currentTime / playerState.current.length) * 100}%` 
-                      : '0%' 
+                      : '0%',
+                    background: 'linear-gradient(90deg,var(--color-primary),var(--color-secondary))'
                   }}
                 />
               </div>
@@ -409,7 +411,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                 />
               </button>
               {showFilterDropdown && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 rounded-lg shadow-lg z-50 animate-dropdown-fade-in" style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
                     <div className="p-2">
                       <div className="text-xs text-zinc-400 mb-2 px-2">Audio Filters</div>
                       {currentFilter && (
@@ -527,8 +529,8 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                   <div 
-                    className="absolute inset-y-0 left-0 bg-white rounded-full group-hover:bg-green-500 transition-colors"
-                    style={{ width: `${localVolume}%` }}
+                    className="absolute inset-y-0 left-0 rounded-full transition-colors"
+                    style={{ width: `${localVolume}%`, background: 'linear-gradient(90deg,var(--color-primary),var(--color-secondary))' }}
                   />
                 </div>
               </div>

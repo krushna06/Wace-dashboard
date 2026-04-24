@@ -63,15 +63,18 @@ export default function GuildSettingsPage({ params }: { params: { id: string } }
             </div>
           </div>
           {/* Language Card */}
-          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow p-6 mb-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h3 className="font-semibold text-lg text-zinc-900 dark:text-white">Language</h3>
-                <p className="text-zinc-500 text-sm">Default language for public dashboard.</p>
+                <h3 className="font-semibold text-lg text-white">Language</h3>
+                <p className="text-zinc-400 text-sm">Default language for public dashboard.</p>
               </div>
               <div className="relative guild-selector w-56" ref={dropdownRef}>
                 {loading ? (
-                  <div className="text-zinc-400">Loading...</div>
+                  <div className="flex items-center gap-2 text-zinc-400 bg-zinc-800 rounded-lg p-2">
+                    <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+                    <span className="text-sm">Loading...</span>
+                  </div>
                 ) : (
                   <>
                     <button

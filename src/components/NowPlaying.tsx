@@ -51,8 +51,8 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
   };
 
   return (
-    <div className="w-80 bg-[#121212] p-6 pb-28 flex flex-col gap-6">
-      <h2 className="text-zinc-500 uppercase text-sm font-bold mb-2">Now Playing</h2>
+    <div className="w-80 p-6 pb-28 flex flex-col gap-6" style={{ background: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)' }}>
+      <h2 className="uppercase text-xs font-bold mb-2 tracking-wider" style={{ color: 'var(--color-secondary)' }}>Now Playing</h2>
       {playerState?.current ? (
         <div className="flex flex-col gap-4">
           <div className="relative">
@@ -76,14 +76,14 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
       {!hideQueue && (
         <div className="flex-1 overflow-y-auto mt-2 pr-2">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-zinc-400 text-xs font-semibold">Queue</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-muted)' }}>Queue</h3>
             {queue.length > 0 && (
               <button
-                className="px-2 py-1 rounded text-xs bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors disabled:opacity-50 ml-2"
+                className="px-2 py-1 rounded text-xs hover:text-white transition-colors disabled:opacity-50 ml-2"
+                style={{ background: 'var(--color-surface-2)', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}
                 onClick={handleClearQueue}
                 disabled={clearing}
                 title="Clear Queue"
-                style={{ lineHeight: 1 }}
               >
                 Clear Queue
               </button>
@@ -94,7 +94,7 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
           ) : (
             <ul className="space-y-2">
               {queue.map((track, idx) => (
-                <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 bg-zinc-900/50 rounded-lg group">
+                <li key={`${track.uri}-${idx}`} className="flex items-center gap-2 p-2 rounded-lg group" style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
                   <div className="w-8 h-8 bg-zinc-800 rounded flex-shrink-0 overflow-hidden">
                     <img src={track.thumbnail} alt={track.title} className="w-full h-full object-cover" />
                   </div>

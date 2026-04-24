@@ -159,11 +159,11 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
-      <div className={`bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] flex flex-col ${
+      <div className={`rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[70vh] flex flex-col ${
         isClosing ? 'animate-spotlight-fade-out' : 'animate-spotlight-fade-in'
-      }`}>
+      }`} style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-zinc-700">
+        <div className="flex items-center gap-3 p-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <Search className="w-5 h-5 text-zinc-400" />
           <input
             ref={inputRef}
@@ -177,7 +177,8 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
             <button
               type="button"
               onClick={() => setShowSourceDropdown((v) => !v)}
-              className="flex items-center gap-2 bg-zinc-800 text-white px-3 py-1 rounded text-sm focus:outline-none border border-zinc-700 hover:bg-zinc-700 transition-colors min-w-[110px]"
+              className="flex items-center gap-2 px-3 py-1 rounded text-sm focus:outline-none hover:opacity-80 transition-opacity min-w-[110px]"
+              style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'white' }}
               aria-haspopup="listbox"
               aria-expanded={showSourceDropdown}
           >
@@ -185,7 +186,7 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
               <ChevronDown className={`w-4 h-4 transition-transform ${showSourceDropdown ? 'rotate-180' : ''}`} />
             </button>
             {showSourceDropdown && (
-              <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-32 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg z-50 animate-dropdown-fade-in">
+              <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-32 rounded-lg shadow-lg z-50 animate-dropdown-fade-in" style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
                 <ul className="py-1" role="listbox">
                   {['youtube', 'spotify'].map((source, idx, arr) => (
                     <li key={source}>
@@ -285,7 +286,7 @@ export function SpotlightSearch({ guildId, isOpen, onClose }: SpotlightSearchPro
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-zinc-700 text-xs text-zinc-400">
+        <div className="p-3 text-xs" style={{ borderTop: '1px solid var(--color-border)', color: 'var(--color-muted)' }}>
           <div className="flex items-center justify-between">
             <span>Use ↑↓ to navigate, Enter to play, Esc to close</span>
             <span>{searchResults.length} results</span>

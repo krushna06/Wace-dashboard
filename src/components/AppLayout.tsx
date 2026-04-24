@@ -124,7 +124,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
   }, [playerState?.pause, playerState?.current]);
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
+    <div className="h-screen text-white flex flex-col" style={{ background: 'var(--color-bg)' }}>
       <div className="flex-1 flex overflow-hidden">
         <Sidebar 
           playlists={playlists} 
@@ -134,7 +134,7 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex items-center justify-between p-4 border-b border-zinc-900">
+          <div className="flex items-center justify-between p-4" style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
             <div className="flex-1"></div>
             <SearchBar
               pathname={pathname}

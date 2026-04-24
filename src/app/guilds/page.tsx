@@ -77,7 +77,7 @@ export default function GuildsPage() {
               <div className="mb-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {listeningGuilds.map((guild) => (
-                    <div key={guild.id} className="bg-zinc-900 rounded-lg overflow-hidden flex flex-col p-0 max-w-sm">
+                    <div key={guild.id} className="rounded-xl overflow-hidden flex flex-col p-0 max-w-sm" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                       <div className="relative h-20 w-full">
                         <img
                           src="/default-banner.svg"
@@ -122,7 +122,7 @@ export default function GuildsPage() {
           <h1 className="text-2xl font-bold mb-4">My servers</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {mutualGuilds.map((guild) => (
-                <div key={guild.id} className="bg-zinc-900 rounded-lg overflow-hidden flex flex-col p-0 max-w-sm">
+                <div key={guild.id} className="rounded-xl overflow-hidden flex flex-col p-0 max-w-sm" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
                   <div className="relative h-20 w-full">
                     <img
                       src="/default-banner.svg"

@@ -34,9 +34,9 @@ export function UserProfile() {
                 alt={session.user.name || 'User'}
                 className="w-10 h-10 rounded-full"
               />
-              <div>
-                <p className="font-medium">{session.user.name}</p>
-                <p className="text-[10px] text-zinc-400 truncate max-w-[10rem] overflow-hidden" title={session.user.email || ''}>{session.user.email || ''}</p>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium truncate">{session.user.name}</p>
+                <p className="text-[10px] text-zinc-400 truncate" title={session.user.email || ''}>{session.user.email || ''}</p>
               </div>
             </div>
           </div>
