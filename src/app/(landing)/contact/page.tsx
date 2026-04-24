@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import LandingLayout from '@/components/landing/LandingLayout'
 import { useState } from 'react'
@@ -108,7 +108,7 @@ export default function ContactPage() {
                   <div className="icon"><i className="fa-sharp fa-regular fa-envelope"></i></div>
                   <div className="inner">
                     <h4 className="title">Our Email Address</h4>
-                    <p className="b2"><a href="mailto:support@wace.live">support@wace.live</a></p>
+                    <p className="b2"><a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a></p>
                   </div>
                 </div>
               </div>

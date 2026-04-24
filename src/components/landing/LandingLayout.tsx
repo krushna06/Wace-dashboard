@@ -198,7 +198,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                       <ul className="footer-link contact-link">
                         <li>
                           <i className="contact-icon fa-sharp fa-regular fa-envelope"></i>
-                          <a href="mailto:support@wace.live">support@wace.live</a>
+                          <a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a>
                         </li>
                       </ul>
                     </div>
