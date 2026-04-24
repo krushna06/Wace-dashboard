@@ -742,4 +742,31 @@ export const adminApi = {
   async updatePremium(userId: string, targetId: string, body: { plan?: string; expiresAt?: string }): Promise<void> {
     await api.patch(`/v1/admin/premium/users/${targetId}`, body, { headers: { 'x-user-id': userId } });
   },
+
+  async getCommands(userId: string): Promise<AdminCommandCategory[]> {
+    const { data } = await api.get('/v1/admin/commands', { headers: { 'x-user-id': userId } });
+    return data;
+  },
+  async setCommandPremium(userId: string, commandKey: string, isPremium: boolean): Promise<void> {
+    await api.patch(`/v1/admin/commands/${commandKey}`, { isPremium }, { headers: { 'x-user-id': userId } });
+  },
+  async resetCommandOverride(userId: string, commandKey: string): Promise<void> {
+    await api.delete(`/v1/admin/commands/${commandKey}/override`, { headers: { 'x-user-id': userId } });
+  },
 };
+
+// ── Admin Commands API ───────────────────────────────────────────────────────
+
+export interface AdminCommand {
+  key: string
+  name: string
+  description: string
+  isPremium: boolean
+  originalAccessableby?: string
+  hasOverride?: boolean
+}
+
+export interface AdminCommandCategory {
+  category: string
+  commands: AdminCommand[]
+}

@@ -1,13 +1,13 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { adminApi, type BlacklistEntry, type PremiumKey, type PremiumUser } from '@/services/api'
-import { Shield, Ban, Key, Users, Trash2, Plus, RefreshCw, Copy, Check } from 'lucide-react'
+import { Shield, Ban, Key, Users, Trash2, Plus, RefreshCw, Copy, Check, Terminal, RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 
-type Tab = 'blacklist' | 'keys' | 'users'
+type Tab = 'blacklist' | 'keys' | 'users' | 'commands'
 
 const PLANS = ['daily', 'weekly', 'monthly', 'yearly', 'lifetime'] as const
 
@@ -37,6 +37,11 @@ export default function AdminPage() {
   const [editPlan, setEditPlan] = useState('')
   const [editExpiry, setEditExpiry] = useState('')
 
+  const [commands, setCommands] = useState<any[]>([])
+  const [cmdLoading, setCmdLoading] = useState(false)
+  const [cmdSearch, setCmdSearch] = useState('')
+  const [togglingKey, setTogglingKey] = useState<string | null>(null)
+
   const uid = session?.user?.id
 
   useEffect(() => {
@@ -55,6 +60,7 @@ export default function AdminPage() {
     if (tab === 'blacklist') loadBlacklist()
     if (tab === 'keys') loadKeys()
     if (tab === 'users') loadPremiumUsers()
+    if (tab === 'commands') loadCommands()
   }, [tab, authorized])
 
   async function loadBlacklist() {
@@ -85,6 +91,49 @@ export default function AdminPage() {
       setPremiumUsers(arr)
     } catch { toast.error('Failed to load premium users') }
     setPuLoading(false)
+  }
+
+  async function loadCommands() {
+    setCmdLoading(true)
+    try {
+      const res = await adminApi.getCommands(uid!)
+      const raw = (res as any).categories ?? res
+      const arr = Array.isArray(raw)
+        ? raw
+        : Object.entries(raw).map(([category, commands]) => ({ category, commands }))
+      setCommands(arr as any)
+    } catch { toast.error('Failed to load commands') }
+    setCmdLoading(false)
+  }
+
+  async function handleToggleCommand(key: string, isPremium: boolean) {
+    setTogglingKey(key)
+    try {
+      await adminApi.setCommandPremium(uid!, key, isPremium)
+      setCommands(prev => prev.map(cat => ({
+        ...cat,
+        commands: cat.commands.map((cmd: any) => cmd.key === key ? { ...cmd, isPremium, hasOverride: true } : cmd)
+      })))
+      toast.success(`Command ${isPremium ? 'set to premium' : 'set to free'}`)
+    } catch { toast.error('Failed to update command') }
+    setTogglingKey(null)
+  }
+
+  async function handleResetCommand(key: string) {
+    setTogglingKey(key)
+    try {
+      await adminApi.resetCommandOverride(uid!, key)
+      setCommands(prev => prev.map(cat => ({
+        ...cat,
+        commands: cat.commands.map((cmd: any) => {
+          if (cmd.key !== key) return cmd
+          const original = cmd.originalAccessableby === 'premium'
+          return { ...cmd, isPremium: original, hasOverride: false }
+        })
+      })))
+      toast.success('Override removed')
+    } catch { toast.error('Failed to reset command') }
+    setTogglingKey(null)
   }
 
   async function handleAddBlacklist() {
@@ -185,6 +234,7 @@ export default function AdminPage() {
         {tabBtn('blacklist', 'Blacklist', Ban)}
         {tabBtn('keys', 'Premium Keys', Key)}
         {tabBtn('users', 'Premium Users', Users)}
+        {tabBtn('commands', 'Commands', Terminal)}
       </div>
 
       {/* ── Blacklist ── */}
@@ -422,6 +472,86 @@ export default function AdminPage() {
                 )
               })}
             </div>
+          )}
+        </div>
+      )}
+
+      {tab === 'commands' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <input
+              className="flex-1 px-3 py-2 rounded-lg text-white text-sm"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+              placeholder="Search commands..."
+              value={cmdSearch}
+              onChange={e => setCmdSearch(e.target.value)}
+            />
+            <button onClick={loadCommands} className="text-zinc-400 hover:text-white transition-colors p-2">
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+
+          {cmdLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+            </div>
+          ) : !Array.isArray(commands) || commands.length === 0 ? (
+            <div className="py-12 text-center text-zinc-500 text-sm">No commands found</div>
+          ) : (
+            commands.map(cat => {
+              const filtered = cat.commands.filter((cmd: any) =>
+                !cmdSearch || cmd.name.toLowerCase().includes(cmdSearch.toLowerCase()) || cmd.key.toLowerCase().includes(cmdSearch.toLowerCase())
+              )
+              if (filtered.length === 0) return null
+              return (
+                <div key={cat.category} className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+                  <div className="px-4 py-2" style={{ background: 'var(--color-surface-2)', borderBottom: '1px solid var(--color-border)' }}>
+                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">{cat.category}</span>
+                  </div>
+                  <div style={{ background: 'var(--color-surface)' }}>
+                    {filtered.map((cmd: any) => (
+                      <div key={cmd.key} className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-white text-sm font-medium">{cmd.name}</span>
+                            <span className="text-zinc-500 text-xs font-mono">{cmd.key}</span>
+                            {cmd.isPremium && <span className="text-xs px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400">Premium</span>}
+                            {cmd.hasOverride && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400">Overridden</span>}
+                          </div>
+                          {cmd.description && <p className="text-zinc-500 text-xs mt-0.5 truncate">{cmd.description}</p>}
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                          {/* Toggle */}
+                          <button
+                            onClick={() => handleToggleCommand(cmd.key, !cmd.isPremium)}
+                            disabled={togglingKey === cmd.key}
+                            className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors disabled:opacity-50"
+                            style={{ background: cmd.isPremium ? 'var(--color-primary)' : 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+                            title={cmd.isPremium ? 'Set to free' : 'Set to premium'}
+                          >
+                            <span
+                              className="inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform"
+                              style={{ transform: cmd.isPremium ? 'translateX(18px)' : 'translateX(2px)' }}
+                            />
+                          </button>
+                          {/* Reset override */}
+                          {cmd.hasOverride && (
+                            <button
+                              onClick={() => handleResetCommand(cmd.key)}
+                              disabled={togglingKey === cmd.key}
+                              className="text-zinc-400 hover:text-yellow-400 transition-colors p-1 disabled:opacity-50"
+                              title="Reset to original"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })
           )}
         </div>
       )}
