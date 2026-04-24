@@ -165,15 +165,6 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                     <img className="logo-light" src="/landing/images/wace.jpg" alt="Wace Logo" style={{ width: 100, height: 'auto', borderRadius: '50%' }} />
                   </Link>
                   <p className="b1 desc-text">Your Discord server dynamic music bot!<br /> I know you want to invite me.</p>
-                  <h6 className="subtitle">Join a Newsletter</h6>
-                  <form className="newsletter-form" action="#">
-                    <div className="form-group">
-                      <input type="email" placeholder="Doesn't work btw" />
-                      <button className="btn-default bg-solid-primary" type="submit">
-                        <i className="fa-sharp fa-regular fa-arrow-right"></i>
-                      </button>
-                    </div>
-                  </form>
                 </div>
               </div>
               <div className="col-lg-2 col-md-6 col-sm-6 col-12">
@@ -225,7 +216,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
             <div className="col-lg-6 col-md-4 col-sm-12 col-12">
               <div className="copyright-right text-center text-lg-end">
                 <p className="copyright-text">
-                  Copyright 2024 <Link href="/" className="btn-read-more"><span>Wace</span></Link>
+                  Copyright &copy; {new Date().getFullYear()} <Link href="/" className="btn-read-more"><span>Wace</span></Link>
                 </p>
               </div>
             </div>
