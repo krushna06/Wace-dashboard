@@ -62,63 +62,57 @@ export default function StatsPage() {
             <div className="flex items-center gap-3 mb-8">
               <h1 className="text-3xl font-bold">Your Stats</h1>
             </div>
-            {loading && <div className="text-zinc-400">Loading stats...</div>}
+            {loading && !stats && <div className="flex justify-center py-12"><div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-primary)' }} /></div>}
             {error && <div className="text-red-400">{error}</div>}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="bg-zinc-900 p-8 rounded-lg border border-zinc-700 flex flex-col items-center shadow-lg">
-                <span className="text-zinc-400 text-lg mb-2">Songs Played</span>
+              <div className="p-8 rounded-xl flex flex-col items-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <span className="text-[#BCC3D7] text-lg mb-2">Songs Played</span>
                 <span className="text-4xl font-bold text-white">{stats?.songsPlayed ?? '--'}</span>
               </div>
-              <div className="bg-zinc-900 p-8 rounded-lg border border-zinc-700 flex flex-col items-center shadow-lg">
-                <span className="text-zinc-400 text-lg mb-2">Commands Executed</span>
+              <div className="p-8 rounded-xl flex flex-col items-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <span className="text-[#BCC3D7] text-lg mb-2">Commands Executed</span>
                 <span className="text-4xl font-bold text-white">{stats?.commandsExecuted ?? '--'}</span>
               </div>
-              <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-700 flex flex-col items-center shadow-lg min-h-[120px] justify-center">
-                <div className="text-zinc-400 text-lg mb-1">Last Played Song</div>
+              <div className="p-6 rounded-xl flex flex-col items-center min-h-[120px] justify-center" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                <div className="text-[#BCC3D7] text-lg mb-1">Last Played Song</div>
                 {lastPlayed ? (
-                  <>
-                    <div className="text-center">
-                      <div className="text-base font-semibold text-white truncate max-w-[180px]">{lastPlayed.title}</div>
-                      <div className="text-zinc-400 text-sm truncate max-w-[180px]">by {lastPlayed.author}</div>
-                      <div className="text-zinc-500 text-xs mt-1">{new Date(lastPlayed.playedAt).toLocaleString()}</div>
-                      <a href={lastPlayed.uri} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-xs mt-2 inline-block hover:text-blue-300 transition-colors" style={{ textDecoration: 'none' }}>Open Song</a>
-                    </div>
-                  </>
+                  <div className="text-center">
+                    <div className="text-base font-semibold text-white truncate max-w-[180px]">{lastPlayed.title}</div>
+                    <div className="text-[#BCC3D7] text-sm truncate max-w-[180px]">by {lastPlayed.author}</div>
+                    <div className="text-zinc-500 text-xs mt-1">{new Date(lastPlayed.playedAt).toLocaleString()}</div>
+                    <a href={lastPlayed.uri} target="_blank" rel="noopener noreferrer" className="text-xs mt-2 inline-block transition-colors" style={{ color: 'var(--color-primary)' }}>Open Song</a>
+                  </div>
                 ) : (
                   <div className="text-zinc-500 text-sm">No song played yet</div>
                 )}
               </div>
             </div>
 
-            <div className="bg-zinc-900 p-6 rounded-lg border border-zinc-700 shadow-lg max-w-2xl mx-auto">
-              <div className="text-zinc-400 text-lg mb-3 font-semibold">Your Top Songs</div>
-              {(() => {
-                if (topSongs.length > 0) {
-                  return (
-                    <ol className="list-decimal list-inside space-y-4">
-                      {topSongs.slice(0, 5).map((song) => (
-                        <li key={song.songId} className="flex flex-col gap-1 p-3 bg-zinc-800/40 rounded-lg">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="min-w-0">
-                              <span className="font-semibold text-white truncate block">{song.title}</span>
-                              <span className="text-zinc-400 text-sm truncate block">by {song.author}</span>
-                            </div>
-                            <a href={song.uri} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-400 hover:text-blue-300 transition-colors" title="Open Song">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6m7-5v6m0 0L10 21m7-7h-6" />
-                              </svg>
-                            </a>
-                          </div>
-                          <div className="text-zinc-500 text-xs mt-1">Plays: {song.playCount}</div>
-                        </li>
-                      ))}
-                    </ol>
-                  );
-                } else {
-                  return <div className="text-zinc-500 text-sm">No songs played yet</div>;
-                }
-              })()}
+            <div className="p-6 rounded-xl max-w-2xl mx-auto" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <div className="text-[#BCC3D7] text-lg mb-3 font-semibold">Your Top Songs</div>
+              {topSongs.length > 0 ? (
+                <ol className="list-decimal list-inside space-y-4">
+                  {topSongs.slice(0, 5).map((song) => (
+                    <li key={song.songId} className="flex flex-col gap-1 p-3 rounded-lg" style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <span className="font-semibold text-white truncate block">{song.title}</span>
+                          <span className="text-[#BCC3D7] text-sm truncate block">by {song.author}</span>
+                        </div>
+                        <a href={song.uri} target="_blank" rel="noopener noreferrer" className="ml-2 transition-colors flex-shrink-0" style={{ color: 'var(--color-primary)' }} title="Open Song">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6m7-5v6m0 0L10 21m7-7h-6" />
+                          </svg>
+                        </a>
+                      </div>
+                      <div className="text-zinc-500 text-xs mt-1">Plays: {song.playCount}</div>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className="text-zinc-500 text-sm">No songs played yet</div>
+              )}
             </div>
           </div>
         </div>

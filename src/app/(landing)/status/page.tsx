@@ -39,7 +39,7 @@ export default function StatusPage() {
   return (
     <LandingLayout>
       <div className="main-content">
-        <div className="rainbow-contact-area rainbow-section-gapTop-big" style={{ paddingBottom: '8rem' }}>
+        <div className="rainbow-contact-area rainbow-section-gapTop-big" style={{ paddingBottom: '21rem' }}>
           <div className="container">
 
             <div className="section-title text-center" style={{ marginBottom: 48 }}>
@@ -63,7 +63,7 @@ export default function StatusPage() {
               <div className="row row--20 justify-content-center">
                 {cards.map(({ label, value, icon, desc }) => (
                   <div key={label} className="col-lg-4 col-md-6 col-12" style={{ marginTop: 20 }}>
-                    <div style={{ padding: '2rem', borderRadius: 16, background: '#16181E', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+                    <div style={{ padding: '2rem', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
                       <i className={'fa-sharp fa-regular ' + icon} style={{ fontSize: 32, color: '#BCC3D7', display: 'block', marginBottom: 14 }}></i>
                       <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#fff', marginBottom: 4, lineHeight: 1 }}>{value}</div>
                       <div style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>{label}</div>

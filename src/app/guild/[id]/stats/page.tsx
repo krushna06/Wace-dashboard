@@ -63,7 +63,7 @@ export default function GuildStatsPage({ params }: { params: { id: string } }) {
           <div className="flex items-center gap-3 mb-8">
             <h1 className="text-3xl font-bold">Guild Stats</h1>
           </div>
-          {loading && <div className="text-zinc-400">Loading stats...</div>}
+          {loading && !stats && <div className="flex justify-center py-12"><div className="w-8 h-8 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-primary)' }} /></div>}
           {error && <div className="text-red-400">{error}</div>}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
