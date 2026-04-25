@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { signIn, useSession } from 'next-auth/react'
+import { BOT_NAME, BOT_LOGO, INVITE_URL, SITE_MAIL } from '@/lib/botConfig'
 
 let scriptsLoaded = false
 
@@ -60,6 +61,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
 
   return (
     <main className="page-wrapper">
+      {/* Top news bar */}
       <div className="header-top-news bg-image1">
         <div className="wrapper">
           <div className="container">
@@ -68,7 +70,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                 <div className="inner">
                   <div className="content">
                     <span className="rainbow-badge">Limited Time Offer</span>
-                    <span className="news-text">Intro price. Get Wace Premium for Big Sale -10% off.</span>
+                    <span className="news-text">Intro price. Get {BOT_NAME} Premium for Big Sale -10% off.</span>
                   </div>
                   <div className="right-button">
                     <Link className="btn-read-more" href="/pricing">
@@ -87,12 +89,13 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
         </div>
       </div>
 
+      {/* Header */}
       <header className="rainbow-header header-default header-transparent header-sticky">
         <div className="container position-relative">
           <div className="row align-items-center row--0">
             <div className="col-lg-2 col-md-6 col-6">
               <Link href="/">
-                <img className="logo" src="/landing/images/wace.jpg" alt="Wace Logo" style={{ width: 70, height: 'auto', borderRadius: 100 }} />
+                <img className="logo" src={BOT_LOGO} alt={`${BOT_NAME} Logo`} style={{ width: 70, height: 'auto', borderRadius: 100 }} />
               </Link>
             </div>
             <div className="col-lg-8 d-none d-lg-block">
@@ -108,7 +111,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
             <div className="col-lg-2 col-md-6 col-6 position-static">
               <div className="header-right">
                 <div className="header-btn" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <a className="rainbow-gradient-btn" target="_blank" rel="noreferrer" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">
+                  <a className="rainbow-gradient-btn" target="_blank" rel="noreferrer" href={INVITE_URL}>
                     <span>Invite</span>
                   </a>
                   <button
@@ -132,11 +135,12 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
         </div>
       </header>
 
+      {/* Mobile menu */}
       <div className="popup-mobile-menu">
         <div className="inner-popup">
           <div className="header-top">
             <Link href="/">
-              <img className="logo-light" src="/landing/images/wace.jpg" alt="Wace Logo" style={{ width: 70, height: 'auto', borderRadius: 30 }} />
+              <img className="logo-light" src={BOT_LOGO} alt={`${BOT_NAME} Logo`} style={{ width: 70, height: 'auto', borderRadius: 30 }} />
             </Link>
             <div className="close-menu">
               <button className="close-button">
@@ -154,13 +158,15 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
             <div className="rbt-sm-separator"></div>
           </div>
           <div className="header-btn d-block d-md-none">
-            <a className="btn-default" target="_blank" rel="noreferrer" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">Invite</a>
+            <a className="btn-default" target="_blank" rel="noreferrer" href={INVITE_URL}>Invite</a>
           </div>
         </div>
       </div>
 
+      {/* Page content */}
       {children}
 
+      {/* Footer */}
       <footer className="rainbow-footer footer-style-default footer-style-3 position-relative">
         <div className="footer-top">
           <div className="container">
@@ -168,7 +174,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
               <div className="col-lg-4 col-md-6 col-sm-12 col-12">
                 <div className="rainbow-footer-widget">
                   <Link href="/">
-                    <img className="logo-light" src="/landing/images/wace.jpg" alt="Wace Logo" style={{ width: 100, height: 'auto', borderRadius: '50%' }} />
+                    <img className="logo-light" src={BOT_LOGO} alt={`${BOT_NAME} Logo`} style={{ width: 100, height: 'auto', borderRadius: '50%' }} />
                   </Link>
                   <p className="b1 desc-text">Your Discord server dynamic music bot!<br /> I know you want to invite me.</p>
                 </div>
@@ -196,7 +202,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                       <ul className="footer-link contact-link">
                         <li>
                           <i className="contact-icon fa-sharp fa-regular fa-envelope"></i>
-                          <a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a>
+                          <a href={`mailto:${SITE_MAIL}`}>{SITE_MAIL}</a>
                         </li>
                       </ul>
                     </div>
@@ -208,6 +214,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
         </div>
       </footer>
 
+      {/* Copyright */}
       <div className="copyright-area copyright-style-one">
         <div className="container">
           <div className="row align-items-center">
@@ -227,7 +234,7 @@ export default function LandingLayout({ children }: LandingLayoutProps) {
                   <Link href="/status" style={{ color: '#BCC3D7', fontSize: 12 }}>All Systems Operational</Link>
                 </div>
                 <p className="copyright-text">
-                  Copyright &copy; {new Date().getFullYear()} <Link href="/" className="btn-read-more"><span>Wace</span></Link>
+                  Copyright &copy; {new Date().getFullYear()} <Link href="/" className="btn-read-more"><span>{BOT_NAME}</span></Link>
                 </p>
               </div>
             </div>

@@ -1,8 +1,7 @@
 'use client'
-
 import LandingLayout from '@/components/landing/LandingLayout'
 import RotatingText from '@/components/landing/RotatingText'
-
+import { BOT_NAME, BOT_LOGO, INVITE_URL } from '@/lib/botConfig'
 export default function Home() {
   return (
     <LandingLayout>
@@ -33,7 +32,7 @@ export default function Home() {
         <div className="container">
           <div className="row">
             <div className="col-lg-12">
-              <div className="section-title text-center pb--60" data-sal="slide-up" data-sal-duration="700" data-sal-delay="100">
+              <div className="section-title text-center pb--60">
                 <h4 className="subtitle"><span className="theme-gradient"># Features Overview</span></h4>
                 <h2 className="title mb--0">View the key features.</h2>
               </div>
@@ -75,7 +74,7 @@ export default function Home() {
                             <li><i className="fa-regular fa-circle-check"></i>Premium Commands</li>
                             <li><i className="fa-regular fa-circle-check"></i>Quick Support</li>
                           </ul></div>
-                          <div className="read-more"><a className="btn-default color-blacked" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">Start Exploring Now</a></div>
+                          <div className="read-more"><a className="btn-default color-blacked" href={INVITE_URL}>Start Exploring Now</a></div>
                         </div>
                       </div>
                       <div className="col-xl-6 mt_md--30 mt_sm--30">
@@ -93,14 +92,14 @@ export default function Home() {
                     <div className="inner"><div className="row">
                       <div className="col-xl-6">
                         <div className="section-title">
-                          <h2 className="title">A dedicated channel only for Wace.</h2>
+                          <h2 className="title">A dedicated channel only for {BOT_NAME}.</h2>
                           <div className="features-section"><ul className="list-style--1">
                             <li><i className="fa-regular fa-circle-check"></i>Just enter the song name/link.</li>
                             <li><i className="fa-regular fa-circle-check"></i>No need of slash or prefix.</li>
                             <li><i className="fa-regular fa-circle-check"></i>Button controls.</li>
                             <li><i className="fa-regular fa-circle-check"></i>Queue list.</li>
                           </ul></div>
-                          <div className="read-more"><a className="btn-default color-blacked" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">Start Exploring Now</a></div>
+                          <div className="read-more"><a className="btn-default color-blacked" href={INVITE_URL}>Start Exploring Now</a></div>
                         </div>
                       </div>
                       <div className="col-xl-6 mt_md--30 mt_sm--30">
@@ -119,7 +118,7 @@ export default function Home() {
                             <li><i className="fa-regular fa-circle-check"></i>Can play music 24/7.</li>
                             <li><i className="fa-regular fa-circle-check"></i>Autojoins if kicked.</li>
                           </ul></div>
-                          <div className="read-more"><a className="btn-default color-blacked" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">Start Exploring Now</a></div>
+                          <div className="read-more"><a className="btn-default color-blacked" href={INVITE_URL}>Start Exploring Now</a></div>
                         </div>
                       </div>
                       <div className="col-xl-6 mt_md--30 mt_sm--30">
@@ -140,7 +139,7 @@ export default function Home() {
                             <li><i className="fa-regular fa-circle-check"></i>Set playlist public/private.</li>
                             <li><i className="fa-regular fa-circle-check"></i>Save the current queue as a playlist.</li>
                           </ul></div>
-                          <div className="read-more"><a className="btn-default color-blacked" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">Start Exploring Now</a></div>
+                          <div className="read-more"><a className="btn-default color-blacked" href={INVITE_URL}>Start Exploring Now</a></div>
                         </div>
                       </div>
                       <div className="col-xl-6 mt_md--30 mt_sm--30">
@@ -160,12 +159,13 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Why BOT_NAME grid */}
       <div className="rainbow-service-area rainbow-section-gap">
         <div className="container">
           <div className="row">
             <div className="col-lg-12">
-              <div className="section-title text-center pb--60" data-sal="slide-up" data-sal-duration="700" data-sal-delay="100">
-                <h4 className="subtitle"><span className="theme-gradient"># Why Wace</span></h4>
+              <div className="section-title text-center pb--60">
+                <h4 className="subtitle"><span className="theme-gradient"># Why {BOT_NAME}</span></h4>
                 <h2 className="title mb--0">Everything you need in one bot.</h2>
               </div>
             </div>
@@ -175,13 +175,13 @@ export default function Home() {
               { icon: 'fa-music', title: 'High Quality Audio', desc: 'Crystal clear audio streaming with no lag or buffering, powered by Lavalink nodes.' },
               { icon: 'fa-list-music', title: 'Smart Queue', desc: 'Manage your queue with ease - skip, shuffle, insert, remove and save as a playlist.' },
               { icon: 'fa-waveform-lines', title: 'Audio Filters', desc: 'Bassboost, nightcore, vaporwave, 3D and 20+ more filters to enhance your listening.' },
-              { icon: 'fa-clock', title: '24/7 Mode', desc: 'Keep the music going around the clock. Wace auto-rejoins if kicked from the channel.' },
+              { icon: 'fa-clock', title: '24/7 Mode', desc: `Keep the music going around the clock. ${BOT_NAME} auto-rejoins if kicked from the channel.` },
               { icon: 'fa-chart-bar', title: 'Detailed Stats', desc: 'Track songs played, top users, top tracks and more with the built-in stats dashboard.' },
               { icon: 'fa-star', title: 'Premium System', desc: 'Unlock exclusive commands and features with affordable premium plans for users and guilds.' },
             ].map(({ icon, title, desc }) => (
-              <div key={title} className="col-lg-4 col-md-6 col-12 mt--30" data-sal="slide-up" data-sal-duration="500">
+              <div key={title} className="col-lg-4 col-md-6 col-12 mt--30">
                 <div style={{ height: '100%', padding: '2rem', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                  <div className="icon" style={{ marginBottom: 16 }}>
+                  <div style={{ marginBottom: 16 }}>
                     <i className={'fa-sharp fa-regular ' + icon} style={{ fontSize: 32, background: 'linear-gradient(135deg,#805AF5,#CD99FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}></i>
                   </div>
                   <div className="content">
@@ -198,7 +198,7 @@ export default function Home() {
       {/* Platforms */}
       <div className="rainbow-section-gap">
         <div className="container">
-          <div className="section-title text-center pb--40" data-sal="slide-up" data-sal-duration="700">
+          <div className="section-title text-center pb--40">
             <h4 className="subtitle"><span className="theme-gradient"># Sources</span></h4>
             <h2 className="title mb--0">Play from anywhere.</h2>
           </div>
@@ -209,10 +209,11 @@ export default function Home() {
               { icon: 'fa-sharp fa-regular fa-file-audio', label: 'Files', color: '#A238FF' },
               { icon: 'fa-sharp fa-regular fa-list-music', label: 'Playlists', color: '#805AF5' },
               { icon: 'fa-sharp fa-regular fa-magnifying-glass', label: 'Search', color: '#CD99FF' },
-            ].map(({ icon, label, color }) => (
-              <div key={label} className="col-lg-2 col-md-3 col-4 mt--20" data-sal="slide-up" data-sal-duration="400">
+              { icon: 'fa-sharp fa-regular fa-waveform-lines', label: 'Filters', color: '#A238FF' },
+            ].map(({ icon, label }) => (
+              <div key={label} className="col-lg-2 col-md-3 col-4 mt--20">
                 <div className="text-center" style={{ padding: '1.5rem 1rem', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <i className={icon} style={{ fontSize: 36, color, display: 'block', marginBottom: 10 }}></i>
+                  <i className={icon} style={{ fontSize: 36, color: '#BCC3D7', display: 'block', marginBottom: 10 }}></i>
                   <p style={{ color: '#BCC3D7', margin: 0, fontSize: 13 }}>{label}</p>
                 </div>
               </div>
@@ -226,10 +227,10 @@ export default function Home() {
         <div className="container">
           <div className="row">
             <div className="col-lg-12">
-              <div className="section-title text-center" data-sal="slide-up" data-sal-duration="700" data-sal-delay="100">
+              <div className="section-title text-center">
                 <h4 className="subtitle"><span className="theme-gradient"># Integration</span></h4>
                 <h2 className="title mb--20">Multiple Integrations</h2>
-                <a className="btn-default btn-large color-blacked" href="https://discord.com/oauth2/authorize?client_id=1221392528566386768">Try It Now</a>
+                <a className="btn-default btn-large color-blacked" href={INVITE_URL}>Try It Now</a>
               </div>
             </div>
           </div>
@@ -238,7 +239,7 @@ export default function Home() {
               <div className="collaboration-image-section" style={{ position: 'relative' }}>
                 <img src="/landing/images/split-2.png" alt="collaboration-image" style={{ width: '100%', height: 'auto' }} />
                 <div className="logo-section" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-                  <img src="/landing/images/wace.jpg" alt="Small Logo" className="small-logo" style={{ width: 200, height: 'auto', borderRadius: 50, boxShadow: '0 0 70px rgba(238, 158, 247, 0.7)' }} />
+                  <img src={BOT_LOGO} alt={`${BOT_NAME} Logo`} className="small-logo" style={{ width: 200, height: 'auto', borderRadius: 50, boxShadow: '0 0 70px rgba(238, 158, 247, 0.7)' }} />
                 </div>
               </div>
             </div>
@@ -253,14 +254,14 @@ export default function Home() {
             <div className="col-lg-8">
               <div className="inner">
                 <div className="content text-left">
-                  <h4 className="title sal-animate" data-sal="slide-up" data-sal-duration="400" data-sal-delay="200">Join the Wace Premium Team</h4>
-                  <p className="sal-animate" data-sal="slide-up" data-sal-duration="400" data-sal-delay="300">Meet our loads of premium users/guilds who are currently satisfied by the premium bot.</p>
+                  <h4 className="title sal-animate">Join the {BOT_NAME} Premium Team</h4>
+                  <p className="sal-animate">Meet our loads of premium users/guilds who are currently satisfied by the premium bot.</p>
                 </div>
               </div>
             </div>
             <div className="col-lg-4">
               <div className="right-content">
-                <div className="call-to-btn text-start text-lg-end sal-animate" data-sal="slide-up" data-sal-duration="400" data-sal-delay="400">
+                <div className="call-to-btn text-start text-lg-end sal-animate">
                   <div className="team-image"><img src="/landing/images/team-01.png" alt="Group Image" /></div>
                   <a className="btn-default" href="https://discord.gg/wacebot">Get a trial today.</a>
                 </div>

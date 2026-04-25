@@ -1,4 +1,5 @@
-﻿import LandingLayout from '@/components/landing/LandingLayout'
+import LandingLayout from '@/components/landing/LandingLayout'
+import { BOT_NAME, BOT_LOGO, INVITE_URL, SITE_MAIL } from '@/lib/botConfig'
 
 export default function PrivacyPolicyPage() {
   return (
@@ -34,7 +35,7 @@ export default function PrivacyPolicyPage() {
                         <h4>Your Choices</h4>
                         <p>You can configure certain privacy settings through Discord&apos;s interface.</p>
                         <h4>Contact Us</h4>
-                        <p>If you have any questions, contact us at <a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a>.</p>
+                        <p>If you have any questions, contact us at <a href={`mailto:${SITE_MAIL}`}>{SITE_MAIL}</a>.</p>
                       </div>
                     </div>
                   </div>
@@ -45,7 +46,7 @@ export default function PrivacyPolicyPage() {
                   <div className="icon"><i className="fa-sharp fa-regular fa-envelope"></i></div>
                   <div className="inner">
                     <h4 className="title">Our Email Address</h4>
-                    <p className="b2"><a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a></p>
+                    <p className="b2"><a href={`mailto:${SITE_MAIL}`}>{SITE_MAIL}</a></p>
                   </div>
                 </div>
               </div>

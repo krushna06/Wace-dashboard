@@ -1,4 +1,5 @@
-﻿import LandingLayout from '@/components/landing/LandingLayout'
+import LandingLayout from '@/components/landing/LandingLayout'
+import { BOT_NAME, BOT_LOGO, INVITE_URL, SITE_MAIL } from '@/lib/botConfig'
 
 export default function TermsPolicyPage() {
   return (
@@ -24,7 +25,7 @@ export default function TermsPolicyPage() {
                           <li>Your use of this bot and any dispute arising out of such use is subject to the laws of England, Northern Ireland, Scotland and Wales.</li>
                         </ul>
                         <h4>Contact Us</h4>
-                        <p>If you have any questions, contact us at <a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a>.</p>
+                        <p>If you have any questions, contact us at <a href={`mailto:${SITE_MAIL}`}>{SITE_MAIL}</a>.</p>
                       </div>
                     </div>
                   </div>
@@ -35,7 +36,7 @@ export default function TermsPolicyPage() {
                   <div className="icon"><i className="fa-sharp fa-regular fa-envelope"></i></div>
                   <div className="inner">
                     <h4 className="title">Our Email Address</h4>
-                    <p className="b2"><a href={`mailto:${process.env.NEXT_PUBLIC_SITE_MAIL}`}>{process.env.NEXT_PUBLIC_SITE_MAIL}</a></p>
+                    <p className="b2"><a href={`mailto:${SITE_MAIL}`}>{SITE_MAIL}</a></p>
                   </div>
                 </div>
               </div>

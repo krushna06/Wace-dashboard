@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect } from 'react'
+import { BOT_NAME, BOT_LOGO, INVITE_URL, SITE_MAIL } from '@/lib/botConfig'
 
 export default function InvitePage() {
   useEffect(() => {
-    window.location.replace('https://discord.com/oauth2/authorize?client_id=1221392528566386768')
+    window.location.replace(INVITE_URL!)
   }, [])
 
   return null

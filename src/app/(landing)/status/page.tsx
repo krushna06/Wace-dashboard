@@ -1,8 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import LandingLayout from '@/components/landing/LandingLayout'
 import { getBotStats, type BotStats } from '@/services/api'
+import { BOT_NAME } from '@/lib/botConfig'
 
 function formatUptime(ms: number): string {
   const d = Math.floor(ms / 86400000)
@@ -23,8 +24,16 @@ export default function StatusPage() {
 
   useEffect(() => {
     getBotStats()
-      .then(setStats)
-      .catch(() => setStats(null))
+      .then((res) => {
+        console.log('[BotStats raw]', res)
+        // handle possible wrapper
+        const data = (res as any).data ?? res
+        setStats(data)
+      })
+      .catch((err) => {
+        console.error('[BotStats error]', err?.response?.status, err?.response?.data, err?.message)
+        setStats(null)
+      })
       .finally(() => setLoading(false))
   }, [])
 
@@ -39,20 +48,26 @@ export default function StatusPage() {
   return (
     <LandingLayout>
       <div className="main-content">
-        <div className="rainbow-contact-area rainbow-section-gapTop-big" style={{ paddingBottom: '21rem' }}>
+        <div className="rainbow-contact-area rainbow-section-gapTop-big" style={{ paddingBottom: '8rem' }}>
           <div className="container">
 
             <div className="section-title text-center" style={{ marginBottom: 48 }}>
               <h4 className="subtitle"><span className="theme-gradient"># Status</span></h4>
               <h2 className="title" style={{ marginBottom: 12 }}>Bot Status</h2>
               <p className="b1" style={{ color: '#BCC3D7', marginBottom: 0 }}>
-                Live overview of Wace&apos;s performance and reach.
+                Live overview of {BOT_NAME}&apos;s performance and reach.
               </p>
             </div>
 
             {loading ? (
               <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
-                <div style={{ width: 36, height: 36, border: '3px solid rgba(128,90,245,0.3)', borderTopColor: '#805AF5', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }}></div>
+                <div className="loader">
+                  <div className="circle"></div>
+                  <div className="circle"></div>
+                  <div className="circle"></div>
+                  <div className="circle"></div>
+                  <div className="circle"></div>
+                </div>
               </div>
             ) : !stats ? (
               <div style={{ textAlign: 'center', color: '#BCC3D7', padding: '4rem 0' }}>
