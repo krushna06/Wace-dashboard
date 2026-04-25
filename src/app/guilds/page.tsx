@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { UserProfile } from '@/components/UserProfile';
 import { Search, Server, ListMusic, Compass } from 'lucide-react';
 import axios from 'axios';
-import { checkIfUserIsDJ, musicApi, checkIfUserIsPremium } from '@/services/api';
+import { musicApi } from '@/services/api';
 import { AppLayout } from '@/components/AppLayout';
 import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
 import { SpotlightSearch } from '@/components/SpotlightSearch';
@@ -36,22 +36,38 @@ export default function GuildsPage() {
 
   const handleGuildClick = async (guildId: string) => {
     setError(null);
-    const userId = session?.user?.id;
-    if (!userId) {
+    if (!session?.user?.id) {
       setError('No user ID found in session.');
       return;
     }
-    const isDJ = await checkIfUserIsDJ(guildId, userId);
-    if (!isDJ) {
-      setError('You are not a DJ in this server. Access denied.');
-      return;
+
+    try {
+      const response = await fetch('/api/auth/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guildId }),
+      });
+
+      if (!response.ok) {
+        setError('Authorization check failed.');
+        return;
+      }
+
+      const result = await response.json();
+      if (!result.isDJ) {
+        setError('You are not a DJ in this server. Access denied.');
+        return;
+      }
+      if (!result.isPremium) {
+        setError('You are not a premium user. Access denied.');
+        return;
+      }
+
+      router.push(`/guild/${guildId}`);
+    } catch (error) {
+      console.error('Authorization check error:', error);
+      setError('Failed to verify authorization.');
     }
-    const isPremium = await checkIfUserIsPremium(userId);
-    if (!isPremium) {
-      setError('You are not a premium user. Access denied.');
-      return;
-    }
-    router.push(`/guild/${guildId}`);
   };
 
   if (status === 'loading' || loading) {

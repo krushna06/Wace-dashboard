@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
-import { checkIfUserIsDJ } from '@/services/api';
+
 import { ListMusic, Home, Server, Compass, Search, ChevronLeft, ChevronRight, ChevronDown, Settings, Trash2, Pencil, BarChart2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { musicApi } from '@/services/api';
@@ -67,14 +67,25 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
   }, [guildId, mutualGuilds]);
 
   const handleGuildSelect = async (selectedGuild: Guild) => {
-    const userId = session?.user?.id;
-    if (!userId) return;
+    if (!session?.user?.id) return;
     try {
-      const isDJ = await checkIfUserIsDJ(selectedGuild.id, userId);
-      if (!isDJ) {
+      const response = await fetch('/api/auth/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guildId: selectedGuild.id }),
+      });
+
+      if (!response.ok) {
+        toast.error('Authorization check failed');
+        return;
+      }
+
+      const result = await response.json();
+      if (!result.isDJ) {
         toast.error('You are not a DJ in this server');
         return;
       }
+
       setCurrentGuild(selectedGuild);
       setShowGuildDropdown(false);
       router.push(`/guild/${selectedGuild.id}`);

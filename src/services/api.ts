@@ -521,31 +521,25 @@ export async function getGuildStats(guildId: string): Promise<GuildStats> {
 }
 
 export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<boolean> {
-  console.log('DJ_ONLY:', process.env.NEXT_PUBLIC_DJ_ONLY);
   if (process.env.NEXT_PUBLIC_DJ_ONLY !== 'true') return true;
   if (!guildId || !userId) return false;
   try {
-    console.log('Calling DJ API via api instance:', guildId, userId);
     const response = await api.get(`/v1/dj/${guildId}/userid`, {
       params: { userid: userId },
     });
-    console.log('DJ API response:', response.data);
     return response.data?.data === 1;
   } catch (err) {
-    console.log('DJ API error:', err);
     return false;
   }
 }
 
 export async function checkIfUserIsPremium(userId: string): Promise<boolean> {
-  console.log('PREMIUM_ONLY:', process.env.NEXT_PUBLIC_PREMIUM_ONLY);
   if (process.env.NEXT_PUBLIC_PREMIUM_ONLY !== 'true') return true;
   if (!userId) return false;
   try {
     const response = await api.get(`/v1/premium/user/${userId}`);
     return response.data?.data?.premium === true;
   } catch (err) {
-    console.log('Premium API error:', err);
     return false;
   }
 }
@@ -705,53 +699,79 @@ export interface PremiumUser {
 
 export const adminApi = {
   async getMe(userId: string): Promise<AdminMe> {
-    const { data } = await api.get('/v1/admin/me', { headers: { 'x-user-id': userId } });
+    const { data } = await axios.get('/api/admin', {
+      params: { endpoint: '/v1/admin/me' },
+    });
     return data;
   },
 
   async getBlacklist(userId: string): Promise<BlacklistEntry[]> {
-    const { data } = await api.get('/v1/admin/blacklist', { headers: { 'x-user-id': userId } });
+    const { data } = await axios.get('/api/admin', {
+      params: { endpoint: '/v1/admin/blacklist' },
+    });
     return data;
   },
   async addBlacklist(userId: string, entry: { id: string; type: 'user' | 'guild'; reason?: string }): Promise<void> {
-    await api.post('/v1/admin/blacklist', entry, { headers: { 'x-user-id': userId } });
+    await axios.post('/api/admin', entry, {
+      params: { endpoint: '/v1/admin/blacklist' },
+    });
   },
   async removeBlacklist(userId: string, id: string): Promise<void> {
-    await api.delete(`/v1/admin/blacklist/${id}`, { headers: { 'x-user-id': userId } });
+    await axios.delete('/api/admin', {
+      params: { endpoint: `/v1/admin/blacklist/${id}` },
+    });
   },
 
   async getKeys(userId: string): Promise<PremiumKey[]> {
-    const { data } = await api.get('/v1/admin/premium/keys', { headers: { 'x-user-id': userId } });
+    const { data } = await axios.get('/api/admin', {
+      params: { endpoint: '/v1/admin/premium/keys' },
+    });
     return data;
   },
   async generateKeys(userId: string, plan: PremiumKey['plan'], amount?: number): Promise<PremiumKey[]> {
-    const { data } = await api.post('/v1/admin/premium/keys', { plan, amount }, { headers: { 'x-user-id': userId } });
+    const { data } = await axios.post('/api/admin', { plan, amount }, {
+      params: { endpoint: '/v1/admin/premium/keys' },
+    });
     return data;
   },
   async deleteKey(userId: string, code: string): Promise<void> {
-    await api.delete(`/v1/admin/premium/keys/${code}`, { headers: { 'x-user-id': userId } });
+    await axios.delete('/api/admin', {
+      params: { endpoint: `/v1/admin/premium/keys/${code}` },
+    });
   },
 
   async getPremiumUsers(userId: string): Promise<PremiumUser[]> {
-    const { data } = await api.get('/v1/admin/premium/users', { headers: { 'x-user-id': userId } });
+    const { data } = await axios.get('/api/admin', {
+      params: { endpoint: '/v1/admin/premium/users' },
+    });
     return data;
   },
   async revokePremium(userId: string, targetId: string): Promise<void> {
-    await api.delete(`/v1/admin/premium/users/${targetId}`, { headers: { 'x-user-id': userId } });
+    await axios.delete('/api/admin', {
+      params: { endpoint: `/v1/admin/premium/users/${targetId}` },
+    });
   },
   async updatePremium(userId: string, targetId: string, body: { plan?: string; expiresAt?: string }): Promise<void> {
-    await api.patch(`/v1/admin/premium/users/${targetId}`, body, { headers: { 'x-user-id': userId } });
+    await axios.patch('/api/admin', body, {
+      params: { endpoint: `/v1/admin/premium/users/${targetId}` },
+    });
   },
 
   async getCommands(userId: string): Promise<AdminCommandCategory[]> {
-    const { data } = await api.get('/v1/admin/commands', { headers: { 'x-user-id': userId } });
+    const { data } = await axios.get('/api/admin', {
+      params: { endpoint: '/v1/admin/commands' },
+    });
     return data;
   },
   async setCommandPremium(userId: string, commandKey: string, isPremium: boolean): Promise<void> {
-    await api.patch(`/v1/admin/commands/${commandKey}`, { isPremium }, { headers: { 'x-user-id': userId } });
+    await axios.patch('/api/admin', { isPremium }, {
+      params: { endpoint: `/v1/admin/commands/${commandKey}` },
+    });
   },
   async resetCommandOverride(userId: string, commandKey: string): Promise<void> {
-    await api.delete(`/v1/admin/commands/${commandKey}/override`, { headers: { 'x-user-id': userId } });
+    await axios.delete('/api/admin', {
+      params: { endpoint: `/v1/admin/commands/${commandKey}/override` },
+    });
   },
 };
 
