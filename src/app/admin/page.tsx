@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { adminApi, type BlacklistEntry, type PremiumKey, type PremiumUser } from '@/services/api'
-import { Shield, Ban, Key, Users, Trash2, Plus, RefreshCw, Copy, Check, Terminal, RotateCcw } from 'lucide-react'
+import { adminApi, type BlacklistEntry, type PremiumKey, type PremiumUser, type Guild } from '@/services/api'
+import { Shield, Ban, Key, Users, Trash2, Plus, RefreshCw, Copy, Check, Terminal, RotateCcw, Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-type Tab = 'blacklist' | 'keys' | 'users' | 'commands'
+type Tab = 'blacklist' | 'keys' | 'users' | 'commands' | 'guilds'
 
 const PLANS = ['daily', 'weekly', 'monthly', 'yearly', 'lifetime'] as const
 
@@ -42,6 +42,10 @@ export default function AdminPage() {
   const [cmdSearch, setCmdSearch] = useState('')
   const [togglingKey, setTogglingKey] = useState<string | null>(null)
 
+  const [guilds, setGuilds] = useState<Guild[]>([])
+  const [guildsLoading, setGuildsLoading] = useState(false)
+  const [guildsSearch, setGuildsSearch] = useState('')
+
   const uid = session?.user?.id
 
   useEffect(() => {
@@ -61,6 +65,7 @@ export default function AdminPage() {
     if (tab === 'keys') loadKeys()
     if (tab === 'users') loadPremiumUsers()
     if (tab === 'commands') loadCommands()
+    if (tab === 'guilds') loadGuilds()
   }, [tab, authorized])
 
   async function loadBlacklist() {
@@ -104,6 +109,15 @@ export default function AdminPage() {
       setCommands(arr as any)
     } catch { toast.error('Failed to load commands') }
     setCmdLoading(false)
+  }
+
+  async function loadGuilds() {
+    setGuildsLoading(true)
+    try {
+      const res = await adminApi.getGuilds(uid!)
+      setGuilds(res.guilds)
+    } catch { toast.error('Failed to load guilds') }
+    setGuildsLoading(false)
   }
 
   async function handleToggleCommand(key: string, isPremium: boolean) {
@@ -235,6 +249,7 @@ export default function AdminPage() {
         {tabBtn('keys', 'Premium Keys', Key)}
         {tabBtn('users', 'Premium Users', Users)}
         {tabBtn('commands', 'Commands', Terminal)}
+        {tabBtn('guilds', 'Guilds', Building2)}
       </div>
 
       {/* ── Blacklist ── */}
@@ -553,6 +568,62 @@ export default function AdminPage() {
               )
             })
           )}
+        </div>
+      )}
+
+      {tab === 'guilds' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <input
+              className="flex-1 px-3 py-2 rounded-lg text-white text-sm"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+              placeholder="Search guilds..."
+              value={guildsSearch}
+              onChange={e => setGuildsSearch(e.target.value)}
+            />
+            <button onClick={loadGuilds} className="text-zinc-400 hover:text-white transition-colors p-2">
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+            <div className="flex items-center justify-between px-4 py-3" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+              <span className="text-white font-semibold">Guilds ({guilds.length})</span>
+            </div>
+            {guildsLoading ? (
+              <div className="flex justify-center py-8" style={{ background: 'var(--color-surface)' }}>
+                <div className="w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
+              </div>
+            ) : guilds.length === 0 ? (
+              <div className="py-8 text-center text-zinc-500 text-sm" style={{ background: 'var(--color-surface)' }}>No guilds found</div>
+            ) : (
+              <div style={{ background: 'var(--color-surface)' }}>
+                {guilds
+                  .filter(g => !guildsSearch || g.name.toLowerCase().includes(guildsSearch.toLowerCase()) || g.id.includes(guildsSearch))
+                  .map(guild => (
+                    <div key={guild.id} className="flex items-center gap-4 px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      {guild.icon && (
+                        <img
+                          src={guild.icon}
+                          alt={guild.name}
+                          className="w-10 h-10 rounded-full flex-shrink-0"
+                        />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-white text-sm font-medium truncate">{guild.name}</p>
+                        <p className="text-zinc-500 text-xs font-mono">{guild.id}</p>
+                      </div>
+                      <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="text-right">
+                          <p className="text-white text-sm font-medium">{guild.memberCount}</p>
+                          <p className="text-zinc-500 text-xs">members</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

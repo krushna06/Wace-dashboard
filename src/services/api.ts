@@ -753,6 +753,11 @@ export const adminApi = {
   async resetCommandOverride(userId: string, commandKey: string): Promise<void> {
     await api.delete(`/v1/admin/commands/${commandKey}/override`, { headers: { 'x-user-id': userId } });
   },
+
+  async getGuilds(userId: string): Promise<GuildsResponse> {
+    const { data } = await api.get('/v1/guilds', { headers: { 'x-user-id': userId } });
+    return data;
+  },
 };
 
 // ── Admin Commands API ───────────────────────────────────────────────────────
@@ -777,6 +782,19 @@ export interface BotStats {
   registeredUsers: number
   activeVCs: number
   songsPlayed: number
+}
+
+export interface Guild {
+  id: string
+  name: string
+  memberCount: number
+  icon: string | null
+  owner: string
+}
+
+export interface GuildsResponse {
+  total: number
+  guilds: Guild[]
 }
 
 export async function getBotStats(): Promise<BotStats> {
