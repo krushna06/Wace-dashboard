@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { AppLayout } from '@/components/AppLayout';
 import { SpotlightSearch } from '@/components/SpotlightSearch';
 import { useSpotlightSearch } from '@/hooks/useSpotlightSearch';
-import { musicApi, type Track } from '@/services/api';
+import { musicApi, type Track, checkIfUserIsDJ, checkIfUserIsPremium } from '@/services/api';
 import { Play, Music } from 'lucide-react';
 import axios from 'axios';
 
@@ -64,6 +64,7 @@ const addRecentlyPlayed = (track: Track): void => {
   if (typeof window === 'undefined') return;
   
   try {
+    console.log('Adding track to recently played:', track.title);
     const recentlyPlayed = getRecentlyPlayed();
     
     const filtered = recentlyPlayed.filter(t => t.uri !== track.uri);
@@ -75,6 +76,7 @@ const addRecentlyPlayed = (track: Track): void => {
     
     const updated = [newTrack, ...filtered].slice(0, MAX_RECENTLY_PLAYED);
     localStorage.setItem(RECENTLY_PLAYED_KEY, JSON.stringify(updated));
+    console.log('Successfully cached track. Total cached tracks:', updated.length);
   } catch (error) {
     console.error('Failed to save recently played song:', error);
   }
@@ -141,46 +143,21 @@ export default function GuildPage({ params }: { params: { id: string } }) {
         setPremiumChecked(true);
         return;
       }
-
-      try {
-        const response = await fetch('/api/auth/check', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ guildId }),
-        });
-
-        if (!response.ok) {
-          setError('Authorization check failed.');
-          setIsLoading(false);
-          setDjChecked(true);
-          setPremiumChecked(true);
-          return;
-        }
-
-        const result = await response.json();
-        setIsDJ(result.isDJ);
-        setDjChecked(true);
-
-        if (!result.isDJ) {
-          setError('You are not a DJ in this server. Access denied.');
-          setIsLoading(false);
-          return;
-        }
-
-        setIsPremium(result.isPremium);
-        setPremiumChecked(true);
-
-        if (!result.isPremium) {
-          setError('You are not a premium user. Access denied.');
-          setIsLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Authorization check error:', error);
-        setError('Failed to verify authorization.');
+      const isDJ = await checkIfUserIsDJ(guildId, userId);
+      setIsDJ(isDJ);
+      setDjChecked(true);
+      if (!isDJ) {
+        setError('You are not a DJ in this server. Access denied.');
         setIsLoading(false);
-        setDjChecked(true);
-        setPremiumChecked(true);
+        return;
+      }
+      const isPremium = await checkIfUserIsPremium(userId);
+      setIsPremium(isPremium);
+      setPremiumChecked(true);
+      if (!isPremium) {
+        setError('You are not a premium user. Access denied.');
+        setIsLoading(false);
+        return;
       }
     };
 

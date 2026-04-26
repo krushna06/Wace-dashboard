@@ -9,6 +9,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import { UserProfile } from '@/components/UserProfile';
 import { Toaster, toast } from 'sonner';
 import { useSession } from 'next-auth/react';
+import { checkIfUserIsDJ } from '@/services/api';
 import Sidebar from '@/components/Sidebar';
 import NowPlaying from '@/components/NowPlaying';
 import SearchBar from '@/components/SearchBar';
