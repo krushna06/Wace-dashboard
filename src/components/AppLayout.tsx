@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { musicApi, type PlayerState, type Playlist } from '@/services/api';
 import { PlayerControls } from '@/components/PlayerControls';
-import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { Search, Home, ListMusic, Play, Server, Compass, ChevronLeft, ChevronRight, ChevronDown, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { UserProfile } from '@/components/UserProfile';
@@ -37,10 +37,28 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(100);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+  const [isNowPlayingCollapsed, setIsNowPlayingCollapsed] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const [guildSearchQuery, setGuildSearchQuery] = useState('');
   const guildSearchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+      if (window.innerWidth < 1024) {
+        setIsSidebarCollapsed(true);
+        setIsNowPlayingCollapsed(true);
+      } else {
+        setIsSidebarCollapsed(false);
+        setIsNowPlayingCollapsed(false);
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchPlayerState = async () => {
     if (!guildId) {
@@ -125,6 +143,9 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
 
   return (
     <div className="h-screen text-white flex flex-col" style={{ background: 'var(--color-bg)' }}>
+      {isSidebarCollapsed === false && (
+        <div className="fixed inset-0 bg-black/50 z-30 lg:hidden animate-fade-in-backdrop" onClick={() => setIsSidebarCollapsed(true)} />
+      )}
       <div className="flex-1 flex overflow-hidden">
         <Sidebar 
           playlists={playlists} 
@@ -134,16 +155,33 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
           onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex items-center justify-between p-4" style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
-            <div className="flex-1"></div>
-            <SearchBar
-              pathname={pathname}
-              guildSearchQuery={guildSearchQuery}
-              setGuildSearchQuery={setGuildSearchQuery}
-              guildSearchInputRef={guildSearchInputRef}
-              onOpenSpotlight={onOpenSpotlight}
-            />
-            <div className="flex-1 flex justify-end">
+          <div className="flex items-center justify-between gap-2 p-4" style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="lg:hidden p-2 rounded-lg hover:opacity-80 transition-opacity flex-shrink-0"
+              style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+              title={isSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
+            >
+              {isSidebarCollapsed ? <Menu className="w-5 h-5" /> : <X className="w-5 h-5" />}
+            </button>
+            <div className="flex-1 min-w-0">
+              <SearchBar
+                pathname={pathname}
+                guildSearchQuery={guildSearchQuery}
+                setGuildSearchQuery={setGuildSearchQuery}
+                guildSearchInputRef={guildSearchInputRef}
+                onOpenSpotlight={onOpenSpotlight}
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => setIsNowPlayingCollapsed(!isNowPlayingCollapsed)}
+                className="lg:hidden p-2 rounded-lg hover:opacity-80 transition-opacity"
+                style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+                title={isNowPlayingCollapsed ? 'Open now playing' : 'Close now playing'}
+              >
+                {isNowPlayingCollapsed ? <ListMusic className="w-5 h-5" /> : <X className="w-5 h-5" />}
+              </button>
               <UserProfile />
             </div>
           </div>
@@ -151,7 +189,14 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
             {children}
           </div>
         </div>
-        <NowPlaying playerState={playerState} guildId={guildId || ''} hideQueue={hideQueue} />
+        {!isNowPlayingCollapsed && (
+          <div className="fixed right-0 top-0 bottom-0 z-40 w-80 lg:hidden overflow-y-auto animate-slide-in-right">
+            <NowPlaying playerState={playerState} guildId={guildId || ''} hideQueue={hideQueue} onClose={() => setIsNowPlayingCollapsed(true)} />
+          </div>
+        )}
+        <div className="hidden lg:flex">
+          <NowPlaying playerState={playerState} guildId={guildId || ''} hideQueue={hideQueue} />
+        </div>
       </div>
       {guildId && !hidePlayerControls && (
         <div className="fixed left-0 right-0 bottom-0 z-50 w-full">

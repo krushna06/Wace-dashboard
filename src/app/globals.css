@@ -129,3 +129,40 @@ body {
   50%       { opacity: 0.26; }
 }
 .animate-lyrics-bg-pulse { animation: lyrics-bg-pulse 8s ease-in-out infinite; }
+
+@keyframes slide-in-left {
+  0% { transform: translateX(-100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-left { animation: slide-in-left 0.3s ease-out; }
+
+@keyframes slide-out-left {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(-100%); opacity: 0; }
+}
+.animate-slide-out-left { animation: slide-out-left 0.3s ease-in; }
+
+@keyframes slide-in-right {
+  0% { transform: translateX(100%); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in-right { animation: slide-in-right 0.3s ease-out; }
+
+@keyframes slide-out-right {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+.animate-slide-out-right { animation: slide-out-right 0.3s ease-in; }
+
+@keyframes fade-in-backdrop {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.animate-fade-in-backdrop { animation: fade-in-backdrop 0.3s ease-out; }
+
+@keyframes fade-out-backdrop {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.animate-fade-out-backdrop { animation: fade-out-backdrop 0.3s ease-in; }
+

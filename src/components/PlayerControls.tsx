@@ -309,7 +309,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
 
   return (
     <>
-      <div className="h-24 border-t p-4" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
+      <div className="h-20 border-t p-3" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)' }}>
         <div className="flex items-center w-full h-full">
           <div className="flex items-center gap-4 w-64 min-w-0 justify-start">
             {playerState?.current ? (
@@ -317,19 +317,19 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                 <img
                   src={playerState.current.thumbnail}
                   alt={playerState.current.title}
-                  className="w-14 h-14 object-cover rounded flex-shrink-0"
+                  className="w-12 h-12 object-cover rounded flex-shrink-0"
                 />
-                <div className="min-w-0">
+                <div className="min-w-0 hidden sm:block">
                   <h3 className="font-semibold truncate max-w-[120px]">{playerState.current.title}</h3>
                   <p className="text-zinc-400 text-sm truncate max-w-[120px]">{playerState.current.author}</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="w-14 h-14 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-zinc-800 rounded flex items-center justify-center flex-shrink-0 hidden sm:flex">
                   <span className="text-zinc-500 text-xs">No track</span>
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 hidden sm:block">
                   <h3 className="font-semibold truncate max-w-[200px] flex items-center">
                     {playerState?.current?.title ?? 'Nothing is being played'}
                     <span className="ml-1">...</span>

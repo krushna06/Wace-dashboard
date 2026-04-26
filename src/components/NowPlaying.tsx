@@ -1,4 +1,4 @@
-import { Play, SkipForward, Trash2 } from 'lucide-react';
+import { Play, SkipForward, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { PlayerState, Track } from '@/services/api';
 import { musicApi } from '@/services/api';
@@ -7,9 +7,10 @@ interface NowPlayingProps {
   playerState: PlayerState | null;
   guildId: string;
   hideQueue?: boolean;
+  onClose?: () => void;
 }
 
-const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
+const NowPlaying = ({ playerState, guildId, hideQueue, onClose }: NowPlayingProps) => {
   const [queue, setQueue] = useState<Track[]>([]);
   const [clearing, setClearing] = useState(false);
 
@@ -51,8 +52,20 @@ const NowPlaying = ({ playerState, guildId, hideQueue }: NowPlayingProps) => {
   };
 
   return (
-    <div className="w-80 p-6 pb-28 flex flex-col gap-6" style={{ background: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)' }}>
-      <h2 className="uppercase text-xs font-bold mb-2 tracking-wider" style={{ color: 'var(--color-secondary)' }}>Now Playing</h2>
+    <div className="w-80 p-6 pb-28 flex flex-col gap-6 h-full overflow-y-auto" style={{ background: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)' }}>
+      <div className="flex items-center justify-between">
+        <h2 className="uppercase text-xs font-bold tracking-wider" style={{ color: 'var(--color-secondary)' }}>Now Playing</h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg hover:opacity-80 transition-opacity"
+            style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)' }}
+            title="Close now playing"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
       {playerState?.current ? (
         <div className="flex flex-col gap-4">
           <div className="relative">

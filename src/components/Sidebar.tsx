@@ -212,7 +212,7 @@ const Sidebar = ({ playlists, guildId, onOpenSpotlight, isCollapsed, onToggle }:
 
   return (
     <div
-      className={`${isCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 flex flex-col transition-all duration-300 overflow-hidden`}
+      className={`${isCollapsed ? 'w-16' : 'w-64'} flex-shrink-0 flex flex-col transition-all duration-300 overflow-hidden ${isCollapsed ? 'hidden sm:flex' : 'fixed sm:relative left-0 top-0 bottom-0 z-40 sm:z-auto animate-slide-in-left sm:animate-none'} lg:relative lg:flex`}
       style={{ background: 'var(--color-surface)', borderRight: '1px solid var(--color-border)' }}
     >
       <div className={`flex ${isCollapsed ? 'justify-center' : 'justify-end'} px-3 pt-4 pb-2 flex-shrink-0`}>
