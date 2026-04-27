@@ -70,7 +70,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
       }
     }
     fetchFilters();
-  }, [guildId]);
+  }, [guildId, showFilterDropdown]);
 
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
