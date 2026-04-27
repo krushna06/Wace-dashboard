@@ -50,8 +50,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!uid) return
-    adminApi.getMe(uid)
-      .then(d => setAuthorized(d.authorized))
+    adminApi.checkAccess(uid)
+      .then(d => setAuthorized(d.isAdmin))
       .catch(() => setAuthorized(false))
   }, [uid])
 
