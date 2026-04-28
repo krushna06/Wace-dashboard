@@ -16,24 +16,31 @@ export function usePlayerWebSocket(
   onPlayerUpdate: (data: any) => void,
   onTrackEnd: (data: any) => void,
   onTrackStart: (data: any) => void,
-  onPlayerPause: () => void,
-  onPlayerResume: () => void
+  onPlayerPause: (data?: any) => void,
+  onPlayerResume: (data?: any) => void
 ) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const maxReconnectAttempts = 10;
+  const isCleanupRef = useRef(false);
 
   const connect = useCallback(() => {
-    if (!guildId) return;
+    if (!guildId || isCleanupRef.current) return;
+    if (reconnectAttemptsRef.current >= maxReconnectAttempts) {
+      return;
+    }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `${window.location.protocol}//${window.location.host}`;
-    const wsUrl = `${protocol}//${new URL(baseUrl).host}/v1/websocket`;
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/v1/websocket`;
 
     try {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        reconnectAttemptsRef.current = 0;
         ws.send(JSON.stringify({
           type: 'auth',
           auth: process.env.NEXT_PUBLIC_API_AUTH_TOKEN || 'default-auth',
@@ -75,32 +82,39 @@ export function usePlayerWebSocket(
               onTrackStart(message.data);
               break;
             case 'playerPause':
-              onPlayerPause();
+              onPlayerPause(message.data);
               break;
             case 'playerResume':
-              onPlayerResume();
+              onPlayerResume(message.data);
               break;
           }
         } catch (error) {
         }
       };
 
-      ws.onerror = (error) => {
+      ws.onerror = () => {
       };
 
       ws.onclose = () => {
         wsRef.current = null;
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, 3000);
+        if (!isCleanupRef.current) {
+          reconnectAttemptsRef.current += 1;
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current - 1), 30000);
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connect();
+          }, delay);
+        }
       };
     } catch (error) {
+      // Silent error handling
     }
   }, [guildId, onPlayerDestroy, onPlayerUpdate, onTrackEnd, onTrackStart, onPlayerPause, onPlayerResume]);
 
   useEffect(() => {
+    isCleanupRef.current = false;
     connect();
     return () => {
+      isCleanupRef.current = true;
       if (wsRef.current) {
         wsRef.current.close();
       }

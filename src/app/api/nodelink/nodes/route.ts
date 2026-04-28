@@ -35,7 +35,6 @@ function getNodelinkNodes(): NodelinkNodeConfig[] {
   try {
     return JSON.parse(nodesJson);
   } catch (error) {
-    console.error('Failed to parse LAVALINK_NODES or NODELINK_NODES:', error);
     return [];
   }
 }
@@ -116,7 +115,6 @@ export async function GET() {
       offlineNodes,
     });
   } catch (error) {
-    console.error('Error fetching Nodelink nodes:', error);
     return NextResponse.json(
       { error: 'Failed to fetch Nodelink nodes' },
       { status: 500 }

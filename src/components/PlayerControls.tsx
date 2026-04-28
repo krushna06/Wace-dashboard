@@ -16,7 +16,7 @@ interface PlayerControlsProps {
 
 export function PlayerControls({ playerState, currentTime, volume, isShuffled = false, onStateChange, guildId }: PlayerControlsProps) {
   const [showVolumeNotification, setShowVolumeNotification] = useState(false);
-  const [localVolume, setLocalVolume] = useState<number>(volume);
+  const [localVolume, setLocalVolume] = useState<number>(volume ?? 100);
   const [showLoopNotification, setShowLoopNotification] = useState(false);
   const [showShuffleNotification, setShowShuffleNotification] = useState(false);
   const [shuffleNotificationText, setShuffleNotificationText] = useState('');
@@ -24,7 +24,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
   const [loopNotificationText, setLoopNotificationText] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [previousVolume, setPreviousVolume] = useState(volume);
+  const [previousVolume, setPreviousVolume] = useState(volume ?? 100);
   
   const [availableFilters, setAvailableFilters] = useState<string[]>([]);
   const [currentFilter, setCurrentFilter] = useState<{ filter: string; amount?: number } | null>(null);
@@ -51,6 +51,10 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
     }
     fetchVolume();
   }, [guildId]);
+
+  React.useEffect(() => {
+    setLocalVolume(volume ?? 100);
+  }, [volume]);
 
   React.useEffect(() => {
     async function fetchFilters() {
@@ -521,7 +525,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                     type="range"
                     min="0"
                     max="100"
-                    value={localVolume}
+                    value={localVolume || 100}
                     onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
                     onMouseDown={() => setIsDragging(true)}
                     onMouseUp={handleVolumeDragEnd}
@@ -531,7 +535,7 @@ export function PlayerControls({ playerState, currentTime, volume, isShuffled = 
                   />
                   <div 
                     className="absolute inset-y-0 left-0 rounded-full transition-colors"
-                    style={{ width: `${localVolume}%`, background: 'linear-gradient(90deg,var(--color-primary),var(--color-secondary))' }}
+                    style={{ width: `${localVolume || 100}%`, background: 'linear-gradient(90deg,var(--color-primary),var(--color-secondary))' }}
                   />
                 </div>
               </div>

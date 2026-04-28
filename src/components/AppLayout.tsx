@@ -68,8 +68,8 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
     try {
       const state = await musicApi.getPlayer(guildId);
       setPlayerState(state);
-      setCurrentTime(state.position);
-      setVolume(state.volume);
+      setCurrentTime(state.position || 0);
+      setVolume(state.volume || 100);
     } catch (error) {
       setPlayerState(null);
     }
@@ -90,22 +90,34 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
   };
 
   const handlePlayerUpdate = (data: any) => {
-    fetchPlayerState();
+    if (data && data.state) {
+      setPlayerState(data.state);
+      setCurrentTime(data.state.position || 0);
+      setVolume(data.state.volume || 100);
+    } else if (data && data.position !== undefined) {
+      setCurrentTime(data.position);
+    }
   };
 
   const handleTrackEnd = (data: any) => {
-    fetchPlayerState();
+    if (data && data.state) {
+      setPlayerState(data.state);
+      setCurrentTime(data.state.position || 0);
+    }
   };
 
   const handleTrackStart = (data: any) => {
-    fetchPlayerState();
+    if (data && data.state) {
+      setPlayerState(data.state);
+      setCurrentTime(data.state.position || 0);
+    }
   };
 
-  const handlePlayerPause = () => {
+  const handlePlayerPause = (data: any) => {
     setPlayerState(prev => prev ? { ...prev, pause: true } : null);
   };
 
-  const handlePlayerResume = () => {
+  const handlePlayerResume = (data: any) => {
     setPlayerState(prev => prev ? { ...prev, pause: false } : null);
   };
 
@@ -122,19 +134,17 @@ export function AppLayout({ children, guildId, requesterId, onOpenSpotlight, hid
   useEffect(() => {
     fetchPlayerState();
     fetchPlaylists();
-    const interval = setInterval(fetchPlayerState, 5000);
-    return () => clearInterval(interval);
   }, [guildId]);
 
   useEffect(() => {
     if (!playerState?.pause && playerState?.current) {
       const timer = setInterval(() => {
         setCurrentTime(prev => {
-          if (prev >= (playerState.current?.length ?? 0)) {
-            fetchPlayerState();
-            return 0;
+          const newTime = prev + 1000;
+          if (newTime >= (playerState.current?.length ?? 0)) {
+            return prev;
           }
-          return prev + 1000;
+          return newTime;
         });
       }, 1000);
       return () => clearInterval(timer);

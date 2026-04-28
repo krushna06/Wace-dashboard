@@ -106,24 +106,20 @@ export const musicApi = {
   async togglePlay(guildId: string): Promise<void> {
     try {
       const currentState = await this.getPlayer(guildId);
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         paused: !currentState.pause,
       });
-      console.log("Play/Pause toggled:", data);
     } catch (error) {
-      console.error("Error toggling play state:", error);
       throw error;
     }
   },  
 
   async setPosition(guildId: string, position: number): Promise<void> {
     try {
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         position,
       });
-      console.log("Position updated:", data);
     } catch (error) {
-      console.error("Error setting position:", error);
       throw error;
     }
   },
@@ -131,36 +127,30 @@ export const musicApi = {
   async setLoop(guildId: string, mode: "none" | "track" | "queue" | "song"): Promise<void> {
     const backendMode = mode === 'song' ? 'song' : mode;
     try {
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         loop: backendMode,
       });
-      console.log("Loop mode updated:", data);
     } catch (error) {
-      console.error("Error setting loop mode:", error);
       throw error;
     }
   },
 
   async skipTrack(guildId: string): Promise<void> {
     try {
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         skipMode: "skip",
       });
-      console.log("Track skipped:", data);
     } catch (error) {
-      console.error("Error skipping track:", error);
       throw error;
     }
   },
 
   async previousTrack(guildId: string): Promise<void> {
     try {
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         skipMode: "previous",
       });
-      console.log("Track set to previous:", data);
     } catch (error) {
-      console.error("Error playing previous track:", error);
       throw error;
     }
   },
@@ -168,12 +158,10 @@ export const musicApi = {
   async setVolume(guildId: string, volume: number): Promise<void> {
     try {
       const volumeValue = Math.min(1000, Math.max(0, volume));
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         volume: volumeValue,
       });
-      console.log("Volume updated:", data);
     } catch (error) {
-      console.error("Error changing volume:", error);
       throw error;
     }
   },
@@ -183,10 +171,8 @@ export const musicApi = {
       const { data } = await api.patch(`/v1/players/${guildId}`, {
         add: [url],
       });
-      console.log("Track added:", data);
       return data.added;
     } catch (error) {
-      console.error("Error adding track:", error);
       throw error;
     }
   },
@@ -196,21 +182,17 @@ export const musicApi = {
       await api.patch(`/v1/players/${guildId}`, {
         skipTo: position,
       });
-      console.log("Skipped to position:", position);
     } catch (error) {
-      console.error("Error skipping to track:", error);
       throw error;
     }
   },
 
   async toggleLoop(guildId: string, mode: "queue" | "song" | "none"): Promise<void> {
     try {
-      const { data } = await api.patch(`/v1/players/${guildId}`, {
+      await api.patch(`/v1/players/${guildId}`, {
         loop: mode,
       });
-      console.log("Loop mode updated:", data);
     } catch (error) {
-      console.error("Error updating loop mode:", error);
       throw error;
     }
   },
@@ -224,10 +206,8 @@ export const musicApi = {
           source: source
         }
       });
-      console.log("Search results:", data);
       return data.tracks || [];
     } catch (error) {
-      console.error("Error searching tracks:", error);
       throw error;
     }
   },
@@ -237,7 +217,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/playlists/${requesterId}`);
       return data.data || [];
     } catch (error) {
-      console.error("Error fetching playlists:", error);
       throw error;
     }
   },
@@ -257,7 +236,6 @@ export const musicApi = {
       
       throw new Error('Playlist not found');
     } catch (error) {
-      console.error("Error fetching playlist:", error);
       throw error;
     }
   },
@@ -267,7 +245,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/players/${guildId}/shuffle`);
       return data.shuffle;
     } catch (error) {
-      console.error('Error fetching shuffle status:', error);
       throw error;
     }
   },
@@ -276,7 +253,6 @@ export const musicApi = {
     try {
       await api.patch(`/v1/players/${guildId}/shuffle`, { shuffle });
     } catch (error) {
-      console.error('Error setting shuffle:', error);
       throw error;
     }
   },
@@ -289,7 +265,6 @@ export const musicApi = {
         search,
       });
     } catch (error) {
-      console.error('Failed to play track:', error);
       throw error;
     }
   },
@@ -303,7 +278,6 @@ export const musicApi = {
       const allFilters = Array.from(new Set([...commandFilters, ...wacelinkFilters]));
       return allFilters;
     } catch (error) {
-      console.error('Error fetching available filters:', error);
       throw error;
     }
   },
@@ -313,7 +287,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/filters/${guildId}`);
       return data.filter || data.data?.filter || null;
     } catch (error) {
-      console.error('Error fetching current filter:', error);
       throw error;
     }
   },
@@ -326,9 +299,7 @@ export const musicApi = {
       }
       
       await api.post(`/v1/filters/${guildId}`, payload);
-      console.log('Filter applied:', filter, amount ? `with amount ${amount}` : '');
     } catch (error) {
-      console.error('Error applying filter:', error);
       throw error;
     }
   },
@@ -336,9 +307,7 @@ export const musicApi = {
   async clearFilters(guildId: string): Promise<void> {
     try {
       await api.delete(`/v1/filters/${guildId}`);
-      console.log('Filters cleared');
     } catch (error) {
-      console.error('Error clearing filters:', error);
       throw error;
     }
   },
@@ -349,7 +318,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/language/${guildId}`, { headers });
       return data;
     } catch (error) {
-      console.error('Error fetching language:', error);
       throw error;
     }
   },
@@ -359,7 +327,6 @@ export const musicApi = {
       const { data } = await api.patch(`/v1/language/${guildId}`, { language }, { headers });
       return data;
     } catch (error) {
-      console.error('Error updating language:', error);
       throw error;
     }
   },
@@ -368,7 +335,6 @@ export const musicApi = {
     try {
       await api.delete(`/v1/queue/${guildId}`);
     } catch (error) {
-      console.error('Error clearing queue:', error);
       throw error;
     }
   },
@@ -377,7 +343,6 @@ export const musicApi = {
     try {
       await api.delete(`/v1/queue/${guildId}/${position}`);
     } catch (error) {
-      console.error('Error removing track from queue:', error);
       throw error;
     }
   },
@@ -387,7 +352,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/guild-checker/${guildId}/${userId}`);
       return data;
     } catch (error) {
-      console.error('Error checking user and bot in guild:', error);
       throw error;
     }
   },
@@ -400,7 +364,6 @@ export const musicApi = {
         },
       });
     } catch (error) {
-      console.error('Error deleting playlist:', error);
       throw error;
     }
   },
@@ -422,7 +385,6 @@ export const musicApi = {
         }
       );
     } catch (error) {
-      console.error('Error editing playlist:', error);
       throw error;
     }
   },
@@ -439,7 +401,6 @@ export const musicApi = {
         }
       );
     } catch (error) {
-      console.error('Error creating playlist:', error);
       throw error;
     }
   },
@@ -449,7 +410,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/lyrics/${guildId}`);
       return data;
     } catch (error) {
-      console.error('Error fetching lyrics:', error);
       throw error;
     }
   },
@@ -459,7 +419,6 @@ export const musicApi = {
       const { data } = await api.get(`/v1/user-history/${userId}`);
       return data.history || [];
     } catch (error) {
-      console.error('Error fetching user history:', error);
       return [];
     }
   },
@@ -507,7 +466,6 @@ export const spotifyApi = {
         throw new Error('No trending tracks found');
       }
     } catch (error) {
-      console.error('Error fetching trending songs from iTunes:', error);
       throw error;
     }
   }
@@ -524,7 +482,6 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     const { data } = await api.get(`/v1/stats/user/${userId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching user stats:', error);
     throw new Error(error?.message || 'Failed to load stats');
   }
 }
@@ -540,37 +497,30 @@ export async function getGuildStats(guildId: string): Promise<GuildStats> {
     const { data } = await api.get(`/v1/stats/guild/${guildId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching guild stats:', error);
     throw new Error(error?.message || 'Failed to load guild stats');
   }
 }
 
 export async function checkIfUserIsDJ(guildId: string, userId: string): Promise<boolean> {
-  console.log('DJ_ONLY:', process.env.NEXT_PUBLIC_DJ_ONLY);
   if (process.env.NEXT_PUBLIC_DJ_ONLY !== 'true') return true;
   if (!guildId || !userId) return false;
   try {
-    console.log('Calling DJ API via api instance:', guildId, userId);
     const response = await api.get(`/v1/dj/${guildId}/userid`, {
       params: { userid: userId },
     });
-    console.log('DJ API response:', response.data);
     return response.data?.data === 1;
   } catch (err) {
-    console.log('DJ API error:', err);
     return false;
   }
 }
 
 export async function checkIfUserIsPremium(userId: string): Promise<boolean> {
-  console.log('PREMIUM_ONLY:', process.env.NEXT_PUBLIC_PREMIUM_ONLY);
   if (process.env.NEXT_PUBLIC_PREMIUM_ONLY !== 'true') return true;
   if (!userId) return false;
   try {
     const response = await api.get(`/v1/premium/user/${userId}`);
     return response.data?.data?.premium === true;
   } catch (err) {
-    console.log('Premium API error:', err);
     return false;
   }
 }
@@ -594,7 +544,6 @@ export async function getGuildTopSongs(guildId: string): Promise<TopSongsRespons
     const { data } = await api.get(`/v1/stats/top-songs/${guildId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching top songs:', error);
     throw new Error(error?.message || 'Failed to load top songs');
   }
 }
@@ -618,7 +567,6 @@ export async function getGuildTopUsers(guildId: string): Promise<TopUsersRespons
     const { data } = await api.get(`/v1/stats/top-users/${guildId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching top users:', error);
     throw new Error(error?.message || 'Failed to load top users');
   }
 }
@@ -642,7 +590,6 @@ export async function getGuildLastPlayed(guildId: string): Promise<LastPlayedRes
     const { data } = await api.get(`/v1/stats/last-played/${guildId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching last played song:', error);
     throw new Error(error?.message || 'Failed to load last played song');
   }
 }
@@ -657,7 +604,6 @@ export async function getUserTopSongs(userId: string): Promise<UserTopSongsRespo
     const { data } = await api.get(`/v1/stats/top-songs-user/${userId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching user top songs:', error);
     throw new Error(error?.message || 'Failed to load user top songs');
   }
 }
@@ -672,7 +618,6 @@ export async function getUserLastPlayed(userId: string): Promise<UserLastPlayedR
     const { data } = await api.get(`/v1/stats/last-played-user/${userId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching user last played song:', error);
     throw new Error(error?.message || 'Failed to load user last played song');
   }
 }
@@ -690,7 +635,6 @@ export async function getDiscordUserInfo(userId: string): Promise<DiscordUserInf
     const { data } = await api.get(`/v1/users/${userId}`);
     return data;
   } catch (error: any) {
-    console.error('Error fetching Discord user info:', error);
     throw new Error(error?.message || 'Failed to fetch user info');
   }
 }
