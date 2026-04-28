@@ -31,8 +31,9 @@ export function usePlayerWebSocket(
       return;
     }
 
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+    const protocol = apiBaseUrl.startsWith('https') ? 'wss:' : 'ws:';
+    const host = apiBaseUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
     const wsUrl = `${protocol}//${host}/v1/websocket`;
 
     try {
